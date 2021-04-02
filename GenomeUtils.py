@@ -7,6 +7,7 @@ from matplotlib import pyplot as plt
 
 def print_genome(genome):
   print(genome.n_genes)
+  print('\n')
   print(genome.c_genes)
   G = nx.DiGraph()
   G.add_nodes_from(genome.n_genes.keys())

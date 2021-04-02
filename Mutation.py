@@ -153,3 +153,10 @@ def alter_connection_mutation(genome, new_val_threshold_chance = 0.1):
   else:
     genome.c_genes[old_input, old_output].w_value += np.random.uniform(-0.001, 0.001) # check if value are g odd
   return True, genome
+
+def alter_connection(c_gene, new_val_threshold_chance = 0.1):
+  if np.random.uniform(0, 1) < new_val_threshold_chance:
+    c_gene.w_value = get_new_weight()
+  else:
+    c_gene.w_value += np.random.normal(0, 0.1) #TODO check if value are good, may need to ajust distribution
+  return c_gene

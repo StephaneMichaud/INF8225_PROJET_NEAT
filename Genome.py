@@ -31,7 +31,7 @@ class Genome:
 
     self.input_size = input_size
     self.output_size = output_size
-    self.gen = generation
+    self.generation = generation
     self.fitness = None
 
   def feed_forward(self, input):
