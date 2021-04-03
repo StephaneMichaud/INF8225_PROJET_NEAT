@@ -4,6 +4,7 @@ import math
 import networkx as nx
 import Genome
 from matplotlib import pyplot as plt
+import pickle
 
 def print_genome(genome):
   print(genome.n_genes)
@@ -37,6 +38,11 @@ def print_genome(genome):
   nx.draw(G, with_labels=True, node_color=color_map, pos=pos_map)
   plt.show()
 
+def save_genome(path, name, genome):
+   pickle.dump( genome, open( path + '/' + "{}.p".format(name), "wb" ) )
+
+def load_genome(path):
+   return pickle.load( open( "{}.p".format(path), "rb" ) )
 
 # TEST FUNCTIONS:
 def create_new_genome(input_size, output_size):

@@ -4,7 +4,7 @@ import numpy as np
 import copy
 #default value were taken from the paper
 def create_cross_over_genome(parentA, parentB, mutation_tracker, newNodePro = 0.03,
-                            newConnectionProb = 0.05, disableGeneProb = 0.75, alterConnectionProb = 0.8, newConnectionValue = 0.1):
+                            newConnectionProb = 1, disableGeneProb = 0.75, alterConnectionProb = 0.8, newConnectionValue = 0.1):
 
     #set dominant parent in parentA
     if parentA.fitness < parentB.fitness:
@@ -32,22 +32,22 @@ def create_cross_over_genome(parentA, parentB, mutation_tracker, newNodePro = 0.
 
     # TODO: INHERIT BOTH DISJOINT GENES WHEN FITENESS ARE EQUAL
     for key in parentA.c_genes.keys():
-           # half chance of choosing either parent
-            if key in parentB.c_genes:
-                new_c_genes[key] = copy.deepcopy(parentA.c_genes[key]) if np.random.uniform(0, 1) < 0.5 else copy.deepcopy(parentB.c_genes[key])
-            else: # else if not in B, we follow the structure of A, which has the better fitness score
-                new_c_genes[key] = copy.deepcopy(parentA.c_genes[key])
-           #copy associated neurons if they are missing, always take from A since every connection from a will be present
-            if not key[0] in new_n_genes:
-                new_n_genes[key[0]] = parentA.n_genes[key[0]]
-            if not key[1] in new_n_genes:
-                new_n_genes[key[0]] = parentA.n_genes[key[0]]
+        # half chance of choosing either parent
+        if key in parentB.c_genes:
+            new_c_genes[key] = copy.deepcopy(parentA.c_genes[key]) if np.random.uniform(0, 1) < 0.5 else copy.deepcopy(parentB.c_genes[key])
+        else: # else if not in B, we follow the structure of A, which has the better fitness score
+            new_c_genes[key] = copy.deepcopy(parentA.c_genes[key])
+        #copy associated neurons if they are missing, always take from A since every connection from a will be present
+        if not key[0] in new_n_genes:
+            new_n_genes[key[0]] = copy.deepcopy(parentA.n_genes[key[0]])
+        if not key[1] in new_n_genes:
+            new_n_genes[key[1]] = copy.deepcopy(parentA.n_genes[key[1]])
 
-            # there is a chance that a gen is disabled if it is disable in either parent
-            if key in parentB.c_genes:
-                if parentA.c_genes[key].disable == True or parentB.c_genes[key] == True:
-                    if np.random.uniform(0, 1) < disableGeneProb:
-                        new_c_genes[key].disable = True
+        # there is a chance that a gen is disabled if it is disable in either parent
+        if key in parentB.c_genes:
+            if parentA.c_genes[key].disable == True or parentB.c_genes[key] == True:
+                if np.random.uniform(0, 1) < disableGeneProb:
+                    new_c_genes[key].disable = True
 
     
     #apply mutation to all connection
@@ -60,10 +60,10 @@ def create_cross_over_genome(parentA, parentB, mutation_tracker, newNodePro = 0.
 
     #apply new nodes mutation
     if np.random.uniform(0, 1) < newNodePro:
-        add_node_mutation(child_genome, mutation_tracker)
+       add_node_mutation(child_genome, mutation_tracker)
     #apply new connection mutation
-    if np.random.uniform(0, 1) < newConnectionProb:
-        add_connection_mutation(child_genome, mutation_tracker)
+    #if np.random.uniform(0, 1) < newConnectionProb:
+    success, child_genome = add_connection_mutation(child_genome, mutation_tracker)
 
     return child_genome
 

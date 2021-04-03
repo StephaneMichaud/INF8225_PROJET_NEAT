@@ -3,3 +3,5 @@ matplotlib
 numpy
 ffmpeg
 gym==0.17.3
+
+need to install visual studio build tools to run c++ 14 if you want to execute gym mario
