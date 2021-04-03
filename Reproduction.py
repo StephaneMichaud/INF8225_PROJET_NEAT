@@ -62,8 +62,8 @@ def create_cross_over_genome(parentA, parentB, mutation_tracker, newNodePro = 0.
     if np.random.uniform(0, 1) < newNodePro:
        add_node_mutation(child_genome, mutation_tracker)
     #apply new connection mutation
-    #if np.random.uniform(0, 1) < newConnectionProb:
-    success, child_genome = add_connection_mutation(child_genome, mutation_tracker)
+    if np.random.uniform(0, 1) < newConnectionProb:
+        success, child_genome = add_connection_mutation(child_genome, mutation_tracker)
 
     return child_genome
 
