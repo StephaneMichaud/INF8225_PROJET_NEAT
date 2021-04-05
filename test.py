@@ -1,7 +1,7 @@
 from Genome import Genome, NodeGene, ConnectionGene
 from GenomeUtils import print_genome, create_new_genome, save_genome, load_genome
 from Mutation import MutationTracker, add_connection_mutation, add_node_mutation
-from Reproduction import create_cross_over_genome
+from Reproduction import create_cross_over_genome, get_intitial_population
 import numpy as np
 import time
 def mutation_and_print_test():
@@ -35,7 +35,7 @@ def mutation_and_print_test():
     save_genome('.', 'test_save', genome_c)
     geneomce_c_reloaded = load_genome('./test_save')
     print(geneomce_c_reloaded)
-
+    get_intitial_population(input_size, output_size, 1000)
 
 if __name__ == "__main__":
     start = time.time()

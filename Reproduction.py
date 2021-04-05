@@ -1,5 +1,6 @@
 from Genome import Genome, NodeGene, ConnectionGene
 from Mutation import add_connection_mutation, add_node_mutation, alter_connection
+from GenomeUtils import create_new_genome
 import numpy as np
 import copy
 #default value were taken from the paper
@@ -96,3 +97,10 @@ def create_asexual_genome(parent, newNodePro = 0.03, newConnectionProb = 0.05, a
         add_connection_mutation(child_genome, mutation_tracker)
 
     return child_genome
+
+
+def get_intitial_population(input_size, output_size, pop_size):
+    pop = []
+    for _ in range(pop_size):
+        pop.append(create_new_genome(input_size, output_size))
+    return pop
