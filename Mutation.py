@@ -74,6 +74,8 @@ def check_cyclic_connections(genome, s_node, t_node):
 
   return False
 
+#add a new connection between two unpreviously unconnected node. Must check if a cycle is formed, If so, search for another pair of nodes.
+#Since the check for each valid pair of nodes is complicated, we will instead try a number of attempt to add a connection by selecting random nodes.
 def add_connection_mutation(genome, mutation_tracker, max_attempt = 10):
   "Add new connection connecting two previously unconnected neurons."
 
@@ -116,6 +118,7 @@ def add_connection_mutation(genome, mutation_tracker, max_attempt = 10):
 
   return valid_connection, genome
 
+#this mutation add a random node splittin an existing edge. If no edge exist, no node can be added.
 def add_node_mutation(genome, mutation_tracker):
   if len(genome.c_genes) == 0:
     return False, genome
@@ -138,7 +141,7 @@ def add_node_mutation(genome, mutation_tracker):
   genome.c_genes[old_input, old_output].disable = True
   return True, genome
 
-
+#take a ranndom edge and modify its value. May be unecessary since we iterate over each edge in a genome.
 def alter_connection_mutation(genome, new_val_threshold_chance = 0.1):
   if len(genome.c_genes) == 0:
     return False, genome
@@ -154,6 +157,7 @@ def alter_connection_mutation(genome, new_val_threshold_chance = 0.1):
     genome.c_genes[old_input, old_output].w_value += np.random.uniform(-0.001, 0.001) # check if value are g odd
   return True, genome
 
+#mutate a given ConnectionGene
 def alter_connection(c_gene, new_val_threshold_chance = 0.1):
   if np.random.uniform(0, 1) < new_val_threshold_chance:
     c_gene.w_value = get_new_weight()

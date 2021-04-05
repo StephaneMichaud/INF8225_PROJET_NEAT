@@ -35,7 +35,7 @@ def mutation_and_print_test():
     save_genome('.', 'test_save', genome_c)
     geneomce_c_reloaded = load_genome('./test_save')
     print(geneomce_c_reloaded)
-    get_intitial_population(input_size, output_size, 1000)
+    create_initial_population(input_size, output_size, 1000)
 
 if __name__ == "__main__":
     start = time.time()
