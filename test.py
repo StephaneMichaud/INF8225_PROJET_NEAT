@@ -1,12 +1,12 @@
 from Genome import Genome, NodeGene, ConnectionGene
 from GenomeUtils import print_genome, create_new_genome, save_genome, load_genome
 from Mutation import MutationTracker, add_connection_mutation, add_node_mutation
-from Reproduction import create_cross_over_genome, get_intitial_population
+from Reproduction import create_cross_over_genome, create_initial_population
 import numpy as np
 import time
 def mutation_and_print_test():
     input_size = 1
-    output_size = 2
+    output_size = 1
     mutation_tracker = MutationTracker(input_size=input_size, output_size=output_size)
     genome_a = create_new_genome(input_size, output_size)
     genome_b = create_new_genome(input_size, output_size)
@@ -20,10 +20,16 @@ def mutation_and_print_test():
     add_node_mutation(genome = genome_a, mutation_tracker = mutation_tracker)
     add_node_mutation(genome = genome_b, mutation_tracker = mutation_tracker)
 
+    add_connection_mutation(genome = genome_a, mutation_tracker = mutation_tracker)
+    add_connection_mutation(genome = genome_b, mutation_tracker = mutation_tracker)
 
-    #print_genome(genome_a)
+    add_connection_mutation(genome = genome_a, mutation_tracker = mutation_tracker)
+    add_connection_mutation(genome = genome_b, mutation_tracker = mutation_tracker)
+
+
+    print_genome(genome_a)
     print("\n\n====================")
-    #print_genome(genome_b)
+    print_genome(genome_b)
     print("\n\n====================")
 
     genome_a.fitness = 1

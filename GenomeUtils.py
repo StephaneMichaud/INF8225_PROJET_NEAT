@@ -29,9 +29,9 @@ def print_genome(genome):
         color_map.append('gray')
         input_nodes = genome.n_genes[node].input_nodes
         pos_x = max([pos_map[x][0] for x in input_nodes if x in pos_map]) + 3
-        possibles_y= [ pos_map[n][1] for n in list(pos_map.keys()) if n in pos_map and pos_map[n][0] == pos_x]
+        possibles_y= [ pos_map[n][1] for n in list(pos_map.keys()) if pos_map[n][0] == pos_x]
         possibles_y.append(-1)
-        pos_y = max( possibles_y ) + 1
+        pos_y = max( possibles_y ) + np.random.uniform(0, 1)
         pos_map[node] = (pos_x, pos_y)
 
   G.add_edges_from([x for x in list(genome.c_genes.keys()) if not genome.c_genes[x].disable])

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import math
 
 # Is used to facilate when checking for connection between nodes (like in feedforward).
 # Neuron type should be i (input), o (output), h (hidden)
@@ -44,7 +45,7 @@ class Genome:
     self.generation = generation
     self.fitness = None
 
-  def feed_forward(self, input):
+  def feed_forward(self, input, max_loop = 1):
 
     # reset values
     self.__n_values = {}
@@ -59,6 +60,7 @@ class Genome:
     for i in range(self.input_size, self.input_size + self.output_size):
       hidden_next_it_list.append(i)
 
+
     #backward breadth first search for feed forward
     #check what neurons are needed for output are continue until we meet a input neuron or a previously calculated neuron. 
     #if all needed neurons have a value, calculate the value of our current neurons. Else, append the needed neurons to the stack
@@ -70,19 +72,23 @@ class Genome:
       for j in self.n_genes[temp].input_nodes:
         if not self.c_genes[j, temp].disable:
           if self.__n_values[j] is None:
-            hidden_next_it_list.append(j)
-            can_activate = False
-      #if neurosn were appended, continue
+            if hidden_next_it_list.count(j) < max_loop:
+              hidden_next_it_list.append(j)
+              can_activate = False
+            else:
+              self.__n_values[j] = 0
+      #if neurons were appended, continue
       if not can_activate:
         continue
       
-      #claculate value of current neurons since all needed neurons had a valid value
+      #calculate value of current neurons since all needed neurons had a valid value
       sum = 0.0
       for j in self.n_genes[temp].input_nodes:
         if not self.c_genes[j, temp].disable:
           sum+= self.__n_values[j] * self.c_genes[j, temp].w_value
       self.__n_values[temp] =  neat_sigmoid(sum) if len(self.n_genes[temp].input_nodes) > 0 else 0 #put zero if neuron not connected to any other neurons
-      
+      #self.__n_values[temp] =  sum if len(self.n_genes[temp].input_nodes) > 0 else 0 #FOR DEBUG
+
       hidden_next_it_list.pop()
 
     return list(self.__n_values.values())[self.input_size:self.input_size+self.output_size] # may need to put into a numpy array for better memory usage

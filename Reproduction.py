@@ -99,7 +99,7 @@ def create_asexual_genome(parent, newNodePro = 0.03, newConnectionProb = 0.05, a
     return child_genome
 
 
-def get_intitial_population(input_size, output_size, pop_size):
+def create_initial_population(input_size, output_size, pop_size):
     pop = []
     for _ in range(pop_size):
         pop.append(create_new_genome(input_size, output_size))

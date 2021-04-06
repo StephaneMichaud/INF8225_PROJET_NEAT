@@ -103,8 +103,8 @@ def add_connection_mutation(genome, mutation_tracker, max_attempt = 10):
         new_connection = False
 
     #check if it would lead to a cycle connection
-    if check_cyclic_connections(genome, first_node, last_node):
-      continue
+    #if check_cyclic_connections(genome, first_node, last_node):
+    #  continue
     valid_connection = True
 
     if new_connection:
