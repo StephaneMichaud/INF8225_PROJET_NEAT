@@ -76,7 +76,7 @@ def check_cyclic_connections(genome, s_node, t_node):
 
 #add a new connection between two unpreviously unconnected node. Must check if a cycle is formed, If so, search for another pair of nodes.
 #Since the check for each valid pair of nodes is complicated, we will instead try a number of attempt to add a connection by selecting random nodes.
-def add_connection_mutation(genome, mutation_tracker, max_attempt = 10):
+def add_connection_mutation(genome, mutation_tracker, max_attempt = 10, no_cycle = False):
   "Add new connection connecting two previously unconnected neurons."
 
   in_size = genome.input_size
@@ -86,8 +86,11 @@ def add_connection_mutation(genome, mutation_tracker, max_attempt = 10):
 
   valid_connection = False
   for attemp in range(0, max_attempt): # to exit when no connections can be added
-    first_node = np.random.randint(0, n_size - out_size)
-    first_node = first_node + out_size if first_node >= in_size else first_node # to eliminate output nodes
+    if no_cycle:
+      first_node = np.random.randint(0, n_size - out_size)
+      first_node = first_node + out_size if first_node >= in_size else first_node # to eliminate output nodes
+    else:
+      first_node = np.random.randint(0, n_size)
     last_node = np.random.randint(in_size, n_size) # to eliminate input nodes
 
     #get actual key for nodes since innov number doesnt necessary match the actual length of n_node
@@ -102,9 +105,9 @@ def add_connection_mutation(genome, mutation_tracker, max_attempt = 10):
       else: # if disable, consider to re enable it
         new_connection = False
 
-    #check if it would lead to a cycle connection
-    #if check_cyclic_connections(genome, first_node, last_node):
-    #  continue
+    #check if it would lead to a cycle connection if acyclic
+    if no_cycle and check_cyclic_connections(genome, first_node, last_node):
+      continue
     valid_connection = True
 
     if new_connection:
