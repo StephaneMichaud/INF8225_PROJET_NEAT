@@ -44,6 +44,9 @@ class Genome:
     self.output_size = output_size
     self.generation = generation
     self.fitness = None
+  
+  def get_nb_genes(self):
+    return self.c_genes + self.n_genes
 
   def feed_forward(self, input, max_loop = 1):
 
