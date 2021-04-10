@@ -29,9 +29,27 @@ class SpeciesManager:
         return
 
 
-    def make_new_species(self, orphan_genomes):
+    def create_new_specie(self, representant):
+        new_specie_id = 0
         # TODO
+        return new_specie_id
+
+
+    def make_new_species(self, orphan_genomes):
+        belongs_to_specie = [False]*len(orphan_genomes)
+        for genome_index, genome in enumerate(orphan_genomes):
+            if not belongs_to_specie[genome_index]:
+                belongs_to_specie[genome_index] = True
+                new_specie_id = self.create_new_specie(genome)
+
+                # Try to add all the other genomes to this specie.
+                for sibling_id, sibling in enumerate(orphan_genomes,genome_index+1):
+                    if not belongs_to_specie[sibling_id] and self.are_same_species(sibling, genome):
+                        self.add_genome_to_specie(sibling, new_specie_id)
+                        belongs_to_specie[sibling_id] = True
+                         
         return
+
 
     
     def calculate_adjusted_fitness(self):
