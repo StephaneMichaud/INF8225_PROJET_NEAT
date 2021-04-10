@@ -104,17 +104,40 @@ def create_initial_population(input_size, output_size, pop_size):
         pop.append(create_new_genome(input_size, output_size))
     return pop
 
-def get_nb_spawn_per_species(species_manager, reproduction_config):
-
+def get_new_size_species(species_list, species_manager, reproduction_config):
 
     #get the sum of ajusted fitness
     fiteness_ajusted_sum = sum([genome.fitness for genome in population]])
 
     min_pop_size = reproduction_config.min_pop_size
+    target_pop_size = reproduction_config.target_pop_size
+    new_specie_size = {}
 
-    spawn_amounts = {}
-    for species_id in zip(species_manager.species.keys()):
-        species_ajfitness = species_manager.ajfitness[species_id][-1]
-        species_size  = species_manager.pop_sizes[species_id][-1]
+    #compute new species size
+    new_pop_total_size = 0
+    if fiteness_ajusted_sum > 0:
+        for species_id in species_list:
+            species_ajfitness = species_manager.ajfitness[species_id][-1]
 
+            proportion = species_ajfitness/fiteness_ajusted_sum
+            pop_size = int(round(proportion * target_pop_size))
+            new_specie_size[species_id] =  max(min_pop_size, pop_size)
+            new_pop_total_size+=new_specie_size[species_id]
+
+    else: #edge case when fitness sum = 0, assign equal prop to all species
+        equal_size = int(round(target_pop_size / len(species_id)))
+        for species_id in species_list:
+            new_specie_size[species_id] = max(min_pop_size, equal_size)
+            new_pop_total_size+=new_specie_size[species_id]
+
+    #need to ajust species size to match more/roughly with target pop size
+    norm = float(new_pop_total_size) / target_pop_size
+
+    for species_id in new_specie_size:
+        new_specie_size[species_id] = max(min_species_size, int(round(new_specie_size[species_id] * norm)))
+
+    return new_specie_size
+
+def reproduce_new_gen( ,species_manager, reproduction_config, generation):
+    return
 
