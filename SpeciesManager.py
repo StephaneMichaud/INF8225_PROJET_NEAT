@@ -122,7 +122,7 @@ class SpeciesManager:
         innov_threshold = max_innov_a if max_innov_a < max_innov_b else max_innov_b
 
         E = len(filter(unmatched_genes_a, lambda g: g.innov_number > innov_threshold)) + len(filter(unmatched_genes_b, lambda g: g.innov_number > innov_threshold))
-        D = E - len(unmatched_genes_a) - len(unmatched_genes_b)
+        D = len(unmatched_genes_b) + len(unmatched_genes_a) - E
         W = mean(abs(gene_a.w_value-gene_b.w_value) for gene_a, gene_b in zip(matching_genes_a, matching_genes_b))
         N = max(genome_a.get_nb_genes(), genome_b.get_nb_genes())
 
