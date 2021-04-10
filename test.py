@@ -38,9 +38,9 @@ def mutation_and_print_test():
         genome_c = create_cross_over_genome(genome_a, genome_b, mutation_tracker)
 
     print(genome_c)
-    save_genome('.', 'test_save', genome_c)
-    geneomce_c_reloaded = load_genome('./test_save')
-    print(geneomce_c_reloaded)
+    #save_genome('.', 'test_save', genome_c)
+    #geneomce_c_reloaded = load_genome('./test_save')
+    #print(geneomce_c_reloaded)
     create_initial_population(input_size, output_size, 1000)
 
 if __name__ == "__main__":

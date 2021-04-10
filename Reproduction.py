@@ -103,6 +103,7 @@ def create_new_genome(input_size, output_size):
      nodes_genes[i] = NodeGene(input_nodes = None, output_nodes=[], neuron_type = 'i')
   for j in range(input_size, input_size + output_size):
      nodes_genes[j] = NodeGene(input_nodes = [], output_nodes= [],  neuron_type = 'o')
+
   return Genome(input_size=input_size, output_size=output_size, nodes_genes=nodes_genes, connection_genes={}, generation= 0)
 
 def create_initial_population(input_size, output_size, pop_size):
@@ -115,6 +116,7 @@ def create_initial_population(input_size, output_size, pop_size):
     pop = []
     for _ in range(pop_size):
         pop.append(create_new_genome(input_size, output_size))
+
     return pop
 
 def get_new_size_species(species_list, species_manager, reproduction_config):
@@ -166,11 +168,32 @@ def get_valid_genomes_with_fitness(genomes, partner = None):
         index_to_remove = genomes.index(partner)
         del index[index_to_remove]
         del fitness[index_to_remove]
-    selected_index = random.choices(index, weights = fitness, k = 1)
+    selected_index = random.choices(index, weights = fitness, k = 1)[0]
+
     return genomes[selected_index]
 
-def get_inter_species_partner(species_manager, current_species, reproduction_config):
-    return None
+def get_inter_species_partner(species_list, species_manager, current_specie, reproduction_config):
+
+    fitness = []
+    index = []
+    cmpt = 0
+    index_to_remove = species_list.index(current_specie)
+
+    chosen_specie = -1
+    if reproduction_config.species_weighted_inter == True:
+        for id_specie in species_list:
+            fitness.append(species_manager.species_avg_fitness[id_specie][-1])
+            index.append(cmpt)
+        chosen_specie = random.choices(index, weights = fitness, k = 1)[0]
+        if chosen_specie == index_to_remove:
+            chosen_specie = (chosen_specie + 1) %  len(species_list)
+    else:
+        chosen_specie = random.randint(0, len(species_list) - 1)
+        if chosen_specie == index_to_remove:
+            chosen_specie = (chosen_specie + 1) %  len(species_list)
+    
+    genomes = species_manager.genomes_per_specie[chosen_specie]
+    return get_valid_genomes_with_fitness(genomes)
 
 
 
@@ -208,30 +231,31 @@ def reproduce_new_gen(species_manager, mutation_tracker,  reproduction_config, l
             new_genomes[-1].generation += 1
             current_size -=1      
 
-        interspeciescount = 0
         #count how many reproduction in those left are of the type inter species
-        for _ in range(current_size):
-            interspeciescount += 1 if random.uniform(0, 1) < reproduction_config.inter_species_prob else 0
-        
-        for _ in range(interspeciescount):
-            #select partner in current species
-            partnerA = get_valid_genomes_with_fitness(genomes)
-            #select partner in other species
-            partnerB = get_inter_species_partner(species_manager, species_id, reproduction_config)
-            child = create_cross_over_genome(parentA=parentA, parentB=parentB, mutation_tracker,
-                                                newNodePro=reproduction_config.newNodePro, 
-                                                newConnectionProb = reproduction_config.newConnectionProb, 
-                                                alterConnectionProb = reproduction_config.alterConnectionProb, 
-                                                newConnectionValueProb = reproduction_config.newConnectionValueProb)
-            new_genomes.append(child)
-            current_size-=1
+        if len(new_size_species) > 1:
+            interspeciescount = 0
+            for _ in range(current_size):
+                interspeciescount += 1 if random.uniform(0, 1) < reproduction_config.inter_species_prob else 0
+            
+            for _ in range(interspeciescount):
+                #select partner in current species
+                partnerA = get_valid_genomes_with_fitness(genomes)
+                #select partner in other species
+                partnerB = get_inter_species_partner(species_list, species_manager, species_id, reproduction_config)
+                child = create_cross_over_genome(parentA=parentA, parentB=parentB, mutation_tracker= mutation_tracker,
+                                                    newNodePro=reproduction_config.newNodePro, 
+                                                    newConnectionProb = reproduction_config.newConnectionProb, 
+                                                    alterConnectionProb = reproduction_config.alterConnectionProb, 
+                                                    newConnectionValueProb = reproduction_config.newConnectionValueProb)
+                new_genomes.append(child)
+                current_size-=1
 
 
 
         # intra reproduction for all child left
         while current_size != 0:
             if len(genomes) == 1:
-                child = create_asexual_genome(parent=genomes[-1], mutation_tracker,
+                child = create_asexual_genome(parent=genomes[-1], mutation_tracker= mutation_tracker,
                                                 newNodePro=reproduction_config.newNodePro, 
                                                 newConnectionProb = reproduction_config.newConnectionProb, 
                                                 alterConnectionProb = reproduction_config.alterConnectionProb, 
@@ -240,7 +264,7 @@ def reproduce_new_gen(species_manager, mutation_tracker,  reproduction_config, l
             else:
                 parentA = get_valid_genomes_with_fitness(genomes)
                 parentB = get_valid_genomes_with_fitness(genomes, parentA)
-                child = create_cross_over_genome(parentA=parentA, parentB=parentB, mutation_tracker,
+                child = create_cross_over_genome(parentA=parentA, parentB=parentB, mutation_tracker= mutation_tracker,
                                                 newNodePro=reproduction_config.newNodePro, 
                                                 newConnectionProb = reproduction_config.newConnectionProb, 
                                                 alterConnectionProb = reproduction_config.alterConnectionProb, 
