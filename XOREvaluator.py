@@ -1,5 +1,3 @@
-from random import random
-
 class XOREvaluator:
     def __init__(self):
         self.xor = [[0,1],[1,0]]
