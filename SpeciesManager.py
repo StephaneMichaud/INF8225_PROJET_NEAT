@@ -15,12 +15,17 @@ class SpeciesManager:
     def get_nb_disjoint_genes(self, genome_a, genome_b):
         return 0 # TODO
 
-    
+
+
+    def get_average_weight_differences_matching_genes(self, genome_a, genome_b):
+        return 0 # TODO
+
+
 
     def compatibility_distance(self, genome_a, genome_b):
         E = self.get_nb_excess_genes(genome_a, genome_b)
         D = self.get_nb_disjoint_genes(genome_a, genome_b)
-        W = None
+        W = self.get_average_weight_differences_matching_genes(genome_a, genome_b)
         N = max(genome_a.get_nb_genes(), genome_b.get_nb_genes())
 
         return self.c1*E/N + self.c2*D/N + self.c3*W
