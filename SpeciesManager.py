@@ -1,4 +1,6 @@
 from itertools import accumulate
+import operator
+from statistics import mean
 
 class SpeciesManager:
     def __init__(self, threshold = 0.5, c1 = 1.0, c2 = 1.0, c3 = 0.4):
@@ -70,7 +72,7 @@ class SpeciesManager:
             for genome in genomes:
                 genome.ajfitness = genome.fitness/float(len(genomes))
             # TODO: NOT SURE THIS WORKS. ALSO, FIGURE OUT HOW TO LAY OUT THE ARRAY OF GEN
-            self.species_adjusted_fitness_sum[specie_id] = accumulate(genomes,lambda ga, gb: ga.ajfitness + gb.ajfitness)
+            self.species_adjusted_fitness_sum[specie_id] = accumulate(genomes, lambda ga, gb: ga.ajfitness + gb.ajfitness)
             
         return
 
@@ -101,36 +103,32 @@ class SpeciesManager:
 
 
 
-    def get_nb_excess_genes(self, genome_a, genome_b):
-        return 0 # TODO
-
-
-
-    def get_nb_disjoint_genes(self, genome_a, genome_b):
-        return 0 # TODO
-
-
-
-    def get_average_weight_differences_matching_genes(self, genome_a, genome_b):
-        return 0 # TODO
-
-
-
     def compatibility_distance(self, genome_a, genome_b):
-        E = self.get_nb_excess_genes(genome_a, genome_b)
-        D = self.get_nb_disjoint_genes(genome_a, genome_b)
-        W = self.get_average_weight_differences_matching_genes(genome_a, genome_b)
+        genes_a = sorted(genome_a.c_genes.values(), key=operator.attrgetter('innov_number'))
+        genes_b = sorted(genome_b.c_genes.values(), key=operator.attrgetter('innov_number'))
+
+        index_matching_genes = 0
+        for index, gene_a, gene_b in enumerate(zip(genes_a, genes_b)):
+            if gene_a.innov_n != gene_b.innov_n:
+                index_matching_genes = index
+                break
+        
+        matching_genes_a, unmatched_genes_a = genes_a[:index_matching_genes], genes_a[index_matching_genes+1:-1]
+        matching_genes_b, unmatched_genes_b = genes_b[:index_matching_genes], genes_b[index_matching_genes+1:-1]
+
+        max_innov_a = unmatched_genes_a[-1].innov_number
+        max_innov_b = unmatched_genes_b[-1].innov_number
+
+        innov_threshold = max_innov_a if max_innov_a < max_innov_b else max_innov_b
+
+        E = len(filter(unmatched_genes_a, lambda g: g.innov_number > innov_threshold)) + len(filter(unmatched_genes_b, lambda g: g.innov_number > innov_threshold))
+        D = E - len(unmatched_genes_a) - len(unmatched_genes_b)
+        W = mean(abs(gene_a.w_value-gene_b.w_value) for gene_a, gene_b in zip(matching_genes_a, matching_genes_b))
         N = max(genome_a.get_nb_genes(), genome_b.get_nb_genes())
 
         return self.c1*E/N + self.c2*D/N + self.c3*W
     
 
 
-
-    def sh(self, genome_a, genome_b):
-        return 0 if self.compatibility_distance(genome_a, genome_b) > self.threshold else 1
-
-
-
     def are_same_species(self, genome_a, genome_b):
-        return bool(self.sh(genome_a, genome_b))
+        return self.compatibility_distance(genome_a, genome_b) < self.threshold
