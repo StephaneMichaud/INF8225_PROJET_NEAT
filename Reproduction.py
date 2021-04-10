@@ -1,11 +1,11 @@
 from Genome import Genome, NodeGene, ConnectionGene
 from Mutation import add_connection_mutation, add_node_mutation, alter_connection
-from GenomeUtils import create_new_genome
 import numpy as np
 import copy
+import random
 #default value were taken from the paper
 def create_cross_over_genome(parentA, parentB, mutation_tracker, newNodePro = 0.03,
-                            newConnectionProb = 1, disableGeneProb = 0.75, alterConnectionProb = 0.8, newConnectionValue = 0.1):
+                            newConnectionProb = 1, disableGeneProb = 0.75, alterConnectionProb = 0.8, newConnectionValueProb = 0.1):
 
     #set dominant parent in parentA
     if parentA.fitness < parentB.fitness:
@@ -55,7 +55,7 @@ def create_cross_over_genome(parentA, parentB, mutation_tracker, newNodePro = 0.
     for c_key in new_c_genes:
         if not new_c_genes[c_key].disable:
             if np.random.uniform(0, 1) < alterConnectionProb:
-                new_c_genes[c_key] = alter_connection(new_c_genes[c_key])
+                new_c_genes[c_key] = alter_connection(new_c_genes[c_key], newConnectionValueProb)
 
     child_genome = Genome(parentA.input_size, parentA.output_size, new_n_genes, new_c_genes, parentA.generation + 1)
 
@@ -70,7 +70,7 @@ def create_cross_over_genome(parentA, parentB, mutation_tracker, newNodePro = 0.
 
 
 # asexual reproduction
-def create_asexual_genome(parent, newNodePro = 0.03, newConnectionProb = 0.05, alterConnectionProb = 0.8, newConnectionValue = 0.1):
+def create_asexual_genome(parent, newNodePro = 0.03, newConnectionProb = 0.05, alterConnectionProb = 0.8, newConnectionValueProb = 0.1):
 
     new_c_genes = {}
     new_n_genes = {}
@@ -84,7 +84,7 @@ def create_asexual_genome(parent, newNodePro = 0.03, newConnectionProb = 0.05, a
     for c_key in new_c_genes:
         if not new_c_genes[c_key].disable:
             if np.random.uniform(0, 1) < alterConnectionProb:
-                new_c_genes[c_key] = alter_connection(new_c_genes[c_key])
+                new_c_genes[c_key] = alter_connection(new_c_genes[c_key], newConnectionValueProb)
 
     child_genome = Genome(parent.input_size, parent.output_size, new_n_genes, new_c_genes, parent.generation + 1)
 
@@ -97,8 +97,21 @@ def create_asexual_genome(parent, newNodePro = 0.03, newConnectionProb = 0.05, a
 
     return child_genome
 
+def create_new_genome(input_size, output_size):
+  nodes_genes = {}
+  for i in range(0, input_size):
+     nodes_genes[i] = NodeGene(input_nodes = None, output_nodes=[], neuron_type = 'i')
+  for j in range(input_size, input_size + output_size):
+     nodes_genes[j] = NodeGene(input_nodes = [], output_nodes= [],  neuron_type = 'o')
+  return Genome(input_size=input_size, output_size=output_size, nodes_genes=nodes_genes, connection_genes={}, generation= 0)
 
 def create_initial_population(input_size, output_size, pop_size):
+
+    #validity checks
+    assert input_size >0
+    assert output_size >0
+    assert pop_size > 0
+
     pop = []
     for _ in range(pop_size):
         pop.append(create_new_genome(input_size, output_size))
@@ -107,7 +120,7 @@ def create_initial_population(input_size, output_size, pop_size):
 def get_new_size_species(species_list, species_manager, reproduction_config):
 
     #get the sum of ajusted fitness
-    fiteness_ajusted_sum = sum([genome.fitness for genome in population]])
+    fiteness_ajusted_sum = sum([genome.fitness for genome in population])
 
     min_pop_size = reproduction_config.min_pop_size
     target_pop_size = reproduction_config.target_pop_size
@@ -138,6 +151,70 @@ def get_new_size_species(species_list, species_manager, reproduction_config):
 
     return new_specie_size
 
-def reproduce_new_gen( ,species_manager, reproduction_config, generation):
+
+
+def get_valid_genomes_with_fitness(genomes):
+    fitness = []
+    for g in genomes:
+        fitness.append(g.fitness)
+    fitness = fitness.sort()
+    genomes = genomes.sort(key=fitness)
+
+
+
+
+def reproduce_new_gen(species_manager, reproduction_config, generation, logger = None):
+
+    #validity checks
+    assert not species_manager is None
+    assert not reproduction_config is None
+    assert generation > 0
+    
+    #get valid species_list, remove one that did not progress for multiple gen
+    species_list = []
+    if not logger is None:
+        print('do something with logger for stagnant species') 
+
+    if len(species_list) == 0: #will need to restart from scratch, can happen also if max score has been reached
+        return []
+
+    new_size_species = get_new_size_species(species_list, species_manager, reproduction_config)
+
+    new_genomes = []
+    for species_id in new_size_species:
+
+        genomes = species_manager.genomes_per_specie[species_id]
+        # sort gen in species by fitness
+        genomes = genomes.sort(key=fitness)
+        current_size = new_size_species[species_id]
+
+        if current_size > 0:
+            if len(genomes) >= reproduction_config.min_size_elite:
+                #copy best genome unchanged
+                new_genomes.append(copy.deepcopy(genomes[-1]))
+                current_size -=1      
+
+        #if population is left
+        # check for cross species mating
+
+
+        while current_size != 0:
+            if len(genomes) == 1:
+                new_gen = create_asexual_genome(parent=genomes[-1],
+                                                newNodePro=reproduction_config.newNodePro, 
+                                                newConnectionProb = reproduction_config.newConnectionProb, 
+                                                alterConnectionProb = reproduction_config.alterConnectionProb, 
+                                                newConnectionValueProb = reproduction_config.newConnectionValueProb)
+                new_genomes.append()
+
+        #check for rest of mating
+            #if pop = 1, asexual
+            #else cross
+
+
+        
+
+
+
     return
 
