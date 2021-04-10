@@ -49,7 +49,7 @@ def create_cross_over_genome(parentA, parentB, mutation_tracker, newNodeProb = 0
         if key in parentB.c_genes:
             if parentA.c_genes[key].disable == True or parentB.c_genes[key] == True:
                 if np.random.uniform(0, 1) < disableGeneProb:
-                    new_c_genes[key].disable = True
+                    new_c_genes[key].disable = False
 
     
     #apply mutation to all connection
