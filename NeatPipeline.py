@@ -1,6 +1,7 @@
 from Genome import Genome
 from Mutation import MutationTracker
 from Reproduction import create_initial_population
+from SpeciesManager import SpeciesManager
 
 
 
@@ -12,6 +13,7 @@ def neat_pipeline(population_size, input_size, output_size, evaluator, outputh_p
     mutationTracker = MutationTracker(input_size, output_size)
 
     # TODO create species manager
+    speciesManager = SpeciesManager()
 
     # TODO create logger
     current_population = None
