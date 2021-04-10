@@ -1,3 +1,5 @@
+from itertools import accumulate
+
 class SpeciesManager:
     def __init__(self, threshold = 0.5, c1 = 1.0, c2 = 1.0, c3 = 0.4):
         self.threshold = threshold
@@ -21,18 +23,29 @@ class SpeciesManager:
         # gen number
         self.gen = 0
 
+
+        self.current_specie_id = -1
         #function get valid species id (has pop > 0 and max fitness augment last 5 gen)
 
 
     def add_genome_to_specie(self, genome, specie_id):
-        # TODO
+        # TODO : FIGURE OUT HOW TO LAY OUT THE ARRAY OF GEN
+        self.species_size[specie_id] += 1
+        if self.species_max_fitness[specie_id] < genome.fitness:
+            self.species_max_fitness[specie_id] = genome.fitness
+        
+        self.genomes_per_specie[specie_id].append(genome)
         return
 
 
     def create_new_specie(self, representant):
-        new_specie_id = 0
-        # TODO
-        return new_specie_id
+        # TODO : FIGURE OUT HOW TO LAY OUT THE ARRAY OF GEN
+        self.current_specie_id += 1
+        self.species_representant[self.current_specie_id] = representant
+        self.species_max_fitness[self.current_specie_id] = representant.fitness
+        self.genomes_per_specie[self.current_specie_id].append(representant)
+
+        return self.current_specie_id
 
 
     def make_new_species(self, orphan_genomes):
@@ -53,15 +66,19 @@ class SpeciesManager:
 
     
     def calculate_adjusted_fitness(self):
-        # TODO
+        for specie_id, genomes in self.genomes_per_specie.items():
+            for genome in genomes:
+                genome.ajfitness = genome.fitness/float(len(genomes))
+            # TODO: NOT SURE THIS WORKS. ALSO, FIGURE OUT HOW TO LAY OUT THE ARRAY OF GEN
+            self.species_adjusted_fitness_sum[specie_id] = accumulate(genomes,lambda ga, gb: ga.ajfitness + gb.ajfitness)
+            
         return
+
 
 
     def initialize_species(self, population, gen):
         self.gen = gen
         self.genomes_per_specie = dict()
-
-        # TODO: OVERWRITE self.genomes_per_specie
 
         # Genomes that can't be members of any species
         orphan_genomes = []
@@ -112,6 +129,7 @@ class SpeciesManager:
 
     def sh(self, genome_a, genome_b):
         return 0 if self.compatibility_distance(genome_a, genome_b) > self.threshold else 1
+
 
 
     def are_same_species(self, genome_a, genome_b):
