@@ -36,7 +36,7 @@ class MutationTracker:
 
 # really close to 1 to not pertub the genome too much
 def get_new_node_mutant_weight():
-  return np.random.normal(1, 0.00001)
+  return np.random.normal(1, 0.0001)
 
 
 def get_new_weight():

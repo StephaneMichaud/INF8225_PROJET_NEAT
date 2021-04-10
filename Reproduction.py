@@ -70,7 +70,7 @@ def create_cross_over_genome(parentA, parentB, mutation_tracker, newNodePro = 0.
 
 
 # asexual reproduction
-def create_asexual_genome(parent, newNodePro = 0.03, newConnectionProb = 0.05, alterConnectionProb = 0.8, newConnectionValueProb = 0.1):
+def create_asexual_genome(parent, mutation_tracker, newNodePro = 0.03, newConnectionProb = 0.05, alterConnectionProb = 0.8, newConnectionValueProb = 0.1):
 
     new_c_genes = {}
     new_n_genes = {}
@@ -153,22 +153,35 @@ def get_new_size_species(species_list, species_manager, reproduction_config):
 
 
 
-def get_valid_genomes_with_fitness(genomes):
+def get_valid_genomes_with_fitness(genomes, partner = None):
     fitness = []
+    index = []
+    cmpt = 0
     for g in genomes:
         fitness.append(g.fitness)
-    fitness = fitness.sort()
-    genomes = genomes.sort(key=fitness)
+        index.append(cmpt)
+
+    if not partner is None:
+        assert len(genomes) > 1
+        index_to_remove = genomes.index(partner)
+        del index[index_to_remove]
+        del fitness[index_to_remove]
+    selected_index = random.choices(index, weights = fitness, k = 1)
+    return genomes[selected_index]
+
+def get_inter_species_partner(species_manager, current_species, reproduction_config):
+    return None
 
 
 
-
-def reproduce_new_gen(species_manager, reproduction_config, generation, logger = None):
+def reproduce_new_gen(species_manager, mutation_tracker,  reproduction_config, logger = None):
 
     #validity checks
     assert not species_manager is None
     assert not reproduction_config is None
-    assert generation > 0
+    assert not mutation_tracker is None
+
+    mutation_tracker.new_gen()
     
     #get valid species_list, remove one that did not progress for multiple gen
     species_list = []
@@ -188,33 +201,52 @@ def reproduce_new_gen(species_manager, reproduction_config, generation, logger =
         genomes = genomes.sort(key=fitness)
         current_size = new_size_species[species_id]
 
-        if current_size > 0:
-            if len(genomes) >= reproduction_config.min_size_elite:
-                #copy best genome unchanged
-                new_genomes.append(copy.deepcopy(genomes[-1]))
-                current_size -=1      
+        #if pop has a certain allowed size
+        if current_size >= reproduction_config.min_size_elite:
+            #copy best genome unchanged
+            new_genomes.append(copy.deepcopy(genomes[-1]))
+            new_genomes[-1].generation += 1
+            current_size -=1      
 
-        #if population is left
-        # check for cross species mating
-
-
-        while current_size != 0:
-            if len(genomes) == 1:
-                new_gen = create_asexual_genome(parent=genomes[-1],
+        interspeciescount = 0
+        #count how many reproduction in those left are of the type inter species
+        for _ in range(current_size):
+            interspeciescount += 1 if random.uniform(0, 1) < reproduction_config.inter_species_prob else 0
+        
+        for _ in range(interspeciescount):
+            #select partner in current species
+            partnerA = get_valid_genomes_with_fitness(genomes)
+            #select partner in other species
+            partnerB = get_inter_species_partner(species_manager, species_id, reproduction_config)
+            child = create_cross_over_genome(parentA=parentA, parentB=parentB, mutation_tracker,
                                                 newNodePro=reproduction_config.newNodePro, 
                                                 newConnectionProb = reproduction_config.newConnectionProb, 
                                                 alterConnectionProb = reproduction_config.alterConnectionProb, 
                                                 newConnectionValueProb = reproduction_config.newConnectionValueProb)
-                new_genomes.append()
-
-        #check for rest of mating
-            #if pop = 1, asexual
-            #else cross
-
-
-        
+            new_genomes.append(child)
+            current_size-=1
 
 
 
-    return
+        # intra reproduction for all child left
+        while current_size != 0:
+            if len(genomes) == 1:
+                child = create_asexual_genome(parent=genomes[-1], mutation_tracker,
+                                                newNodePro=reproduction_config.newNodePro, 
+                                                newConnectionProb = reproduction_config.newConnectionProb, 
+                                                alterConnectionProb = reproduction_config.alterConnectionProb, 
+                                                newConnectionValueProb = reproduction_config.newConnectionValueProb)
+                new_genomes.append(child)
+            else:
+                parentA = get_valid_genomes_with_fitness(genomes)
+                parentB = get_valid_genomes_with_fitness(genomes, parentA)
+                child = create_cross_over_genome(parentA=parentA, parentB=parentB, mutation_tracker,
+                                                newNodePro=reproduction_config.newNodePro, 
+                                                newConnectionProb = reproduction_config.newConnectionProb, 
+                                                alterConnectionProb = reproduction_config.alterConnectionProb, 
+                                                newConnectionValueProb = reproduction_config.newConnectionValueProb)
+                new_genomes.append(child)
+            current_size-=1
+
+    return new_genomes
 
