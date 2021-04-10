@@ -24,10 +24,12 @@ def neat_pipeline(population_size, input_size, output_size, evaluator, outputh_p
         else:
             current_population = None # CREATE NEW GEN BASED ON OLD ONE + SPECIES SCORE
         
-        #separate genomes by species (can do after evaluate also)
 
 
         evaluator.evaluate_genomes(current_population) #will set fitness attribute inside of each genomes
+
+        #separate genomes by species (can do after evaluate also)
+        speciesManager.initialize_species(current_population, gen)
 
         #save/log best model
             #if best fitness better than fitness goal(if valid value), then break

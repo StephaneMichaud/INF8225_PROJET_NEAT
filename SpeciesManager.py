@@ -6,15 +6,60 @@ class SpeciesManager:
         self.c3 = c3
 
         # list of species id
-        # set of species size
-        # set of species ajusted fitness sum
-        # set of species max fitness
-        # set of representant
-        # set of list of genomes per species, reset when new gen
+        self.species_id = []
+        # dict of species size
+        self.species_size = dict()
+        # dict of species ajusted fitness sum (array for fitness sum per generation)
+        self.species_adjusted_fitness_sum = dict()
+        # dict of species max fitness (array for fitness per generation)
+        self.species_max_fitness = dict()
+        # dict of representant
+        self.species_representant = dict()
+        # dict of list of genomes per specie, reset when new gen
+        self.genomes_per_specie = dict()
+
         # gen number
+        self.gen = 0
 
         #function get valid species id (has pop > 0 and max fitness augment last 5 gen)
 
+
+    def add_genome_to_specie(self, genome, specie_id):
+        # TODO
+        return
+
+
+    def make_new_species(self, orphan_genomes):
+        # TODO
+        return
+
+    
+    def calculate_adjusted_fitness(self):
+        # TODO
+        return
+
+
+    def initialize_species(self, population, gen):
+        self.gen = gen
+        self.genomes_per_specie = dict()
+
+        # TODO: OVERWRITE self.genomes_per_specie
+
+        # Genomes that can't be members of any species
+        orphan_genomes = []
+        for genome in population:
+            for specie_id in self.species_id:
+                if self.are_same_species(genome, self.species_representant[specie_id]):
+                    self.add_genome_to_specie(genome, specie_id)
+                else:
+                    orphan_genomes.append(genome)
+
+        self.make_new_species(orphan_genomes)
+
+        # Calculate adjusted fitness for each species
+        self.calculate_adjusted_fitness()
+
+        return
 
 
 
@@ -45,5 +90,8 @@ class SpeciesManager:
 
 
     def sh(self, genome_a, genome_b):
-        return 1 if self.compatibility_distance(genome_a, genome_b) > self.threshold else 0
+        return 0 if self.compatibility_distance(genome_a, genome_b) > self.threshold else 1
 
+
+    def are_same_species(self, genome_a, genome_b):
+        return bool(self.sh(genome_a, genome_b))
