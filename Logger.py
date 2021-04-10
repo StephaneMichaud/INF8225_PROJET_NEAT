@@ -26,6 +26,8 @@ class Logger:
             #Extraire la meilleur performance de chaque espècce
             #Extraire le représentant de chaque espèce
             #Extraire la performance moyenne de chaque espèce
+
+                #Will all be args in the species manager
             
         espece = Species()
         espece.name = specie.name

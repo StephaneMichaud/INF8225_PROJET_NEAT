@@ -3,6 +3,7 @@ from Mutation import add_connection_mutation, add_node_mutation, alter_connectio
 import numpy as np
 import copy
 import random
+from munch import Munch
 #default value were taken from the paper
 def create_cross_over_genome(parentA, parentB, mutation_tracker, newNodeProb = 0.03,
                             newConnectionProb = 1, disableGeneProb = 0.75, alterConnectionProb = 0.8, newConnectionValueProb = 0.1):
@@ -119,6 +120,24 @@ def create_initial_population(input_size, output_size, pop_size):
 
     return pop
 
+
+def get_basic_reproduction_config():
+    "Will NOT instanciate target_pop_size"
+    "   newNodeProb, newConnectionProb, alterConnectionProb, newConnectionValueProb"
+    "   min_size_elite, inter_species_prob, species_weighted_inter, min_pop_size, target_pop_size"
+    reproduction_config = Munch()
+    reproduction_config.newNodeProb = 0.03
+    reproduction_config.newConnectionProb = 0.05
+    reproduction_config.alterConnectionProb = 0.8
+    reproduction_config.newConnectionValueProb = 0.1
+
+    reproduction_config.min_size_elite = 1
+    reproduction_config.min_pop_size = 1
+    reproduction_config.inter_species_prob = 0.001
+    reproduction_config.species_weighted_inter = True
+
+    return reproduction_config
+
 def get_new_size_species(species_list, species_manager, reproduction_config):
 
     #get the sum of ajusted fitness
@@ -198,8 +217,8 @@ def get_inter_species_partner(species_list, species_manager, current_specie, rep
 
 
 def reproduce_new_gen(species_manager, mutation_tracker,  reproduction_config, logger = None):
-    "Create a new generation based on the previous on (stored in species_manager).
-    "The reproduction config should be a Munch containing all of the following:
+    "Create a new generation based on the previous on (stored in species_manager)."
+    "The reproduction config should be a Munch containing all of the following:"
     "   newNodeProb, newConnectionProb, alterConnectionProb, newConnectionValueProb"
     "   min_size_elite, inter_species_prob, species_weighted_inter, min_pop_size, target_pop_size"
     #validity checks
