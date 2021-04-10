@@ -48,11 +48,14 @@ class SpeciesManager:
         # Genomes that can't be members of any species
         orphan_genomes = []
         for genome in population:
+            belongs_to_specie = False
             for specie_id in self.species_id:
                 if self.are_same_species(genome, self.species_representant[specie_id]):
                     self.add_genome_to_specie(genome, specie_id)
-                else:
-                    orphan_genomes.append(genome)
+                    belongs_to_specie = True
+                    break
+            if not belongs_to_specie:
+                orphan_genomes.append(genome)
 
         self.make_new_species(orphan_genomes)
 
