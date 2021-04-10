@@ -44,14 +44,6 @@ def save_genome(path, name, genome):
 def load_genome(path):
    return pickle.load( open( "{}.p".format(path), "rb" ) )
 
-# TEST FUNCTIONS:
-def create_new_genome(input_size, output_size):
-  nodes_genes = {}
-  for i in range(0, input_size):
-     nodes_genes[i] = Genome.NodeGene(input_nodes = None, output_nodes=[], neuron_type = 'i')
-  for j in range(input_size, input_size + output_size):
-     nodes_genes[j] = Genome.NodeGene(input_nodes = [], output_nodes= None,  neuron_type = 'o')
-  return Genome.Genome(input_size=input_size, output_size=output_size, nodes_genes=nodes_genes, connection_genes={}, generation= 0)
 
 def create_test_genome():
   input_size = 2
@@ -62,7 +54,7 @@ def create_test_genome():
   for i in range(0, input_size):
      nodes_genes[i] = Genome.NodeGene(input_nodes = None, output_nodes=[], neuron_type = 'i')
   for j in range(input_size, input_size + output_size):
-     nodes_genes[j] = Genome.NodeGene(input_nodes = [], output_nodes= None,  neuron_type = 'o')
+     nodes_genes[j] = Genome.NodeGene(input_nodes = [], output_nodes= [],  neuron_type = 'o')
 
   #iter 1
   nodes_genes[0].output_nodes.append(2)
