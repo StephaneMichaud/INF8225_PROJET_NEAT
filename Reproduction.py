@@ -70,7 +70,6 @@ def create_cross_over_genome(parentA, parentB, mutation_tracker, newNodePro = 0.
 
 
 # asexual reproduction
-
 def create_asexual_genome(parent, newNodePro = 0.03, newConnectionProb = 0.05, alterConnectionProb = 0.8, newConnectionValue = 0.1):
 
     new_c_genes = {}
@@ -104,3 +103,18 @@ def create_initial_population(input_size, output_size, pop_size):
     for _ in range(pop_size):
         pop.append(create_new_genome(input_size, output_size))
     return pop
+
+def get_nb_spawn_per_species(species_manager, reproduction_config):
+
+
+    #get the sum of ajusted fitness
+    fiteness_ajusted_sum = sum([genome.fitness for genome in population]])
+
+    min_pop_size = reproduction_config.min_pop_size
+
+    spawn_amounts = {}
+    for species_id in zip(species_manager.species.keys()):
+        species_ajfitness = species_manager.ajfitness[species_id][-1]
+        species_size  = species_manager.pop_sizes[species_id][-1]
+
+
