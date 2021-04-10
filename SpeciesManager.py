@@ -5,6 +5,17 @@ class SpeciesManager:
         self.c2 = c2
         self.c3 = c3
 
+        # list of species id
+        # set of species size
+        # set of species ajusted fitness sum
+        # set of species max fitness
+        # set of representant
+        # set of list of genomes per species, reset when new gen
+        # gen number
+
+        #function get valid species id (has pop > 0 and max fitness augment last 5 gen)
+
+
 
 
     def get_nb_excess_genes(self, genome_a, genome_b):

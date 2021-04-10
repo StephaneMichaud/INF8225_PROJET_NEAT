@@ -44,6 +44,7 @@ class Genome:
     self.output_size = output_size
     self.generation = generation
     self.fitness = None
+    self.ajfitness = None
   
   def get_nb_genes(self):
     return self.c_genes
