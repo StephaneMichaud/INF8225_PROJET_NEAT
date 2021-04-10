@@ -4,7 +4,7 @@ import numpy as np
 import copy
 import random
 #default value were taken from the paper
-def create_cross_over_genome(parentA, parentB, mutation_tracker, newNodePro = 0.03,
+def create_cross_over_genome(parentA, parentB, mutation_tracker, newNodeProb = 0.03,
                             newConnectionProb = 1, disableGeneProb = 0.75, alterConnectionProb = 0.8, newConnectionValueProb = 0.1):
 
     #set dominant parent in parentA
@@ -60,7 +60,7 @@ def create_cross_over_genome(parentA, parentB, mutation_tracker, newNodePro = 0.
     child_genome = Genome(parentA.input_size, parentA.output_size, new_n_genes, new_c_genes, parentA.generation + 1)
 
     #apply new nodes mutation
-    if np.random.uniform(0, 1) < newNodePro:
+    if np.random.uniform(0, 1) < newNodeProb:
        add_node_mutation(child_genome, mutation_tracker)
     #apply new connection mutation
     if np.random.uniform(0, 1) < newConnectionProb:
@@ -70,7 +70,7 @@ def create_cross_over_genome(parentA, parentB, mutation_tracker, newNodePro = 0.
 
 
 # asexual reproduction
-def create_asexual_genome(parent, mutation_tracker, newNodePro = 0.03, newConnectionProb = 0.05, alterConnectionProb = 0.8, newConnectionValueProb = 0.1):
+def create_asexual_genome(parent, mutation_tracker, newNodeProb = 0.03, newConnectionProb = 0.05, alterConnectionProb = 0.8, newConnectionValueProb = 0.1):
 
     new_c_genes = {}
     new_n_genes = {}
@@ -89,7 +89,7 @@ def create_asexual_genome(parent, mutation_tracker, newNodePro = 0.03, newConnec
     child_genome = Genome(parent.input_size, parent.output_size, new_n_genes, new_c_genes, parent.generation + 1)
 
     #apply new nodes mutation
-    if np.random.uniform(0, 1) < newNodePro:
+    if np.random.uniform(0, 1) < newNodeProb:
         add_node_mutation(child_genome, mutation_tracker)
     #apply new connection mutation
     if np.random.uniform(0, 1) < newConnectionProb:
@@ -198,7 +198,10 @@ def get_inter_species_partner(species_list, species_manager, current_specie, rep
 
 
 def reproduce_new_gen(species_manager, mutation_tracker,  reproduction_config, logger = None):
-
+    "Create a new generation based on the previous on (stored in species_manager).
+    "The reproduction config should be a Munch containing all of the following:
+    "   newNodeProb, newConnectionProb, alterConnectionProb, newConnectionValueProb"
+    "   min_size_elite, inter_species_prob, species_weighted_inter, min_pop_size, target_pop_size"
     #validity checks
     assert not species_manager is None
     assert not reproduction_config is None
@@ -243,7 +246,7 @@ def reproduce_new_gen(species_manager, mutation_tracker,  reproduction_config, l
                 #select partner in other species
                 partnerB = get_inter_species_partner(species_list, species_manager, species_id, reproduction_config)
                 child = create_cross_over_genome(parentA=parentA, parentB=parentB, mutation_tracker= mutation_tracker,
-                                                    newNodePro=reproduction_config.newNodePro, 
+                                                    newNodeProb=reproduction_config.newNodeProb, 
                                                     newConnectionProb = reproduction_config.newConnectionProb, 
                                                     alterConnectionProb = reproduction_config.alterConnectionProb, 
                                                     newConnectionValueProb = reproduction_config.newConnectionValueProb)
@@ -256,7 +259,7 @@ def reproduce_new_gen(species_manager, mutation_tracker,  reproduction_config, l
         while current_size != 0:
             if len(genomes) == 1:
                 child = create_asexual_genome(parent=genomes[-1], mutation_tracker= mutation_tracker,
-                                                newNodePro=reproduction_config.newNodePro, 
+                                                newNodeProb=reproduction_config.newNodeProb, 
                                                 newConnectionProb = reproduction_config.newConnectionProb, 
                                                 alterConnectionProb = reproduction_config.alterConnectionProb, 
                                                 newConnectionValueProb = reproduction_config.newConnectionValueProb)
@@ -265,7 +268,7 @@ def reproduce_new_gen(species_manager, mutation_tracker,  reproduction_config, l
                 parentA = get_valid_genomes_with_fitness(genomes)
                 parentB = get_valid_genomes_with_fitness(genomes, parentA)
                 child = create_cross_over_genome(parentA=parentA, parentB=parentB, mutation_tracker= mutation_tracker,
-                                                newNodePro=reproduction_config.newNodePro, 
+                                                newNodeProb=reproduction_config.newNodeProb, 
                                                 newConnectionProb = reproduction_config.newConnectionProb, 
                                                 alterConnectionProb = reproduction_config.alterConnectionProb, 
                                                 newConnectionValueProb = reproduction_config.newConnectionValueProb)
