@@ -4,6 +4,7 @@ import math
 import networkx as nx
 import Genome
 from matplotlib import pyplot as plt
+from Mutation import get_new_weight
 import pickle
 
 def print_genome(genome):
@@ -34,6 +35,117 @@ def print_genome(genome):
         pos_y = max( possibles_y ) + np.random.uniform(0, 1)
         pos_map[node] = (pos_x, pos_y)
 
+  G.add_edges_from([x for x in list(genome.c_genes.keys()) if not genome.c_genes[x].disable])
+  nx.draw(G, with_labels=True, node_color=color_map, pos=pos_map)
+  plt.show()
+
+
+def print_genome2(genome):
+  print(genome.n_genes)
+  print('\n')
+  print(genome.c_genes)
+  G = nx.DiGraph()
+  G.add_nodes_from(genome.n_genes.keys())
+  color_map = []
+  pos_map = {}
+  MAX = 50
+
+  step_input_y = MAX/(genome.input_size+1)
+  step_output_y = MAX/(genome.output_size+1)
+  input_y = step_input_y*(1-genome.input_size)/2
+  output_y = step_output_y*(1-genome.output_size)/2
+  
+  
+  degrees = {}
+  visited = {}
+  for node in G: #Setup degree to 0 
+     degrees[node] = 0
+     visited[node] = False
+
+  def setup_degree(node, current,visited): #setup degree for the graph
+     degrees[node] = max(current,degrees[node])
+     visited[node] = True
+     next_nodes = genome.n_genes[node].output_nodes
+     if next_nodes != None:
+         for next in next_nodes:
+            if not visited[next] and next >= genome.input_size + genome.output_size:
+               setup_degree(next,current+1,visited)
+   
+
+  for node in range(genome.input_size): #For all input nodes
+     setup_degree(node,0,visited.copy())
+  max_degree = max(degrees.values()) + 1
+
+  x_step = MAX/(max_degree)
+
+  #setup all degree of outputs to max degree
+  for node in range(genome.input_size,genome.input_size + genome.output_size):
+     degrees[node] = max_degree
+
+  node_per_degree = {}
+  for i in range(max_degree+1):
+     node_per_degree[i] = []
+   
+  for node in G:
+     node_per_degree[degrees[node]].append(node)
+
+  y_pos = {}
+  y_pos[0] = {}
+  for node in range(genome.input_size):
+     y_pos[0][node] = input_y
+     input_y+=step_input_y
+  
+  GAP = min(step_input_y,step_output_y)
+  
+  def shove_up(L,i):
+     if i+1 < len(L):
+        if L[i+1] - L[i] < GAP:
+           L[i+1] = L[i] + GAP
+           shove_up(L,i+1)
+         
+  for degree in range(1,max_degree):
+     degree_list_node = node_per_degree[degree]
+     y_pos[degree] = {}
+     avg_list = []
+     for node in degree_list_node:
+        temp = []
+        for parent in genome.n_genes[node].input_nodes:
+           if degrees[parent] < degree:
+               #print('Node ', node)
+               #print('Parent ', parent)
+               temp.append(y_pos[degrees[parent]][parent])
+        avg = sum(temp)/len(temp)
+        avg_list.append(avg)
+     degree_list_node = [x for _,x in sorted(zip(avg_list,degree_list_node))]
+     avg_list.sort()
+     for i in range(len(avg_list)-1):
+        if avg_list[i+1] - avg_list[i] < GAP:
+           middle = (avg_list[i] + avg_list[i+1])/2
+           avg_list[i] = middle - GAP/2
+           avg_list[i+1] = middle + GAP/2
+           shove_up(avg_list,i+1)
+     for i in range(len(avg_list)):
+        node = degree_list_node[i]
+        y_pos[degree][node] = avg_list[i]
+   
+
+  for node in G:
+    if node < genome.input_size:
+        color_map.append('blue')
+        pos_map[node] = (0, y_pos[0][node])
+    elif node < genome.input_size + genome.output_size: 
+        color_map.append('green')
+        pos_map[node] = (MAX, output_y)
+        output_y+=step_output_y
+    else:
+        color_map.append('gray')
+        input_nodes = genome.n_genes[node].input_nodes
+        pos_x = max([pos_map[x][0] for x in input_nodes if x in pos_map]) + 3
+        possibles_y= [ pos_map[n][1] for n in list(pos_map.keys()) if pos_map[n][0] == pos_x]
+        possibles_y.append(-1)
+        pos_y = max( possibles_y ) + np.random.uniform(0, 1)
+        pos_map[node] = (degrees[node]*x_step, y_pos[degrees[node]][node])
+ 
   G.add_edges_from([x for x in list(genome.c_genes.keys()) if not genome.c_genes[x].disable])
   nx.draw(G, with_labels=True, node_color=color_map, pos=pos_map)
   plt.show()

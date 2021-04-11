@@ -1,5 +1,5 @@
 from Genome import Genome, NodeGene, ConnectionGene
-from GenomeUtils import print_genome, create_new_genome, save_genome, load_genome
+from GenomeUtils import print_genome, print_genome2,save_genome, load_genome,create_test_genome
 from Mutation import MutationTracker, add_connection_mutation, add_node_mutation
 import numpy as np
 import time
@@ -57,7 +57,7 @@ def mutation_and_print_test():
   connect_genes[0, 8] = ConnectionGene(innov_n = 10, w_value = 1, disable= False)
 
   genome = Genome(input_size=input_size, output_size=output_size, nodes_genes=nodes_genes, connection_genes= connect_genes, generation=0)
-  print_genome(genome)
+  print_genome2(genome)
   result = genome.feed_forward([1])
   print(result)
   result = genome.feed_forward([1], 10)
@@ -68,3 +68,6 @@ if __name__ == "__main__":
     start = time.time()
     mutation_and_print_test()
     print(time.time() - start)
+
+    genome = create_test_genome()
+    print_genome2(genome)
