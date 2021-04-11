@@ -232,7 +232,7 @@ def reproduce_new_gen(species_manager, mutation_tracker,  reproduction_config, l
     mutation_tracker.new_gen()
     
     #get valid species_list, remove one that did not progress for multiple gen
-    species_list = []
+    species_list = species_manager.get_valid_species_list(reproduction_config)
     if not logger is None:
         print('do something with logger for stagnant species') 
 
