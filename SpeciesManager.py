@@ -133,12 +133,45 @@ class SpeciesManager:
 
         valid_specie = []
         for specie, max_fitness_per_gen in self.species_max_fitness.items():
-            if len(max_fitness_per_gen) > reproduction_config.species_max_gen_stagnant \
-                and max_fitness_per_gen[-1] > max_fitness_per_gen[-reproduction_config.species_max_gen_stagnant]:
+            if len(max_fitness_per_gen) > reproduction_config.species_max_gen_stagnant:
+                if max_fitness_per_gen[-1] > max_fitness_per_gen[-reproduction_config.species_max_gen_stagnant]:
+                    valid_specie.append(specie)
+            else:
                 valid_specie.append(specie)
+                
 
         
         return
+
+    def kill_empty_species(self):
+        # list of species id
+        self.species_id = []
+        # dict of species size
+        self.species_size = dict()
+        # dict of species ajusted fitness sum (array for fitness sum per generation)
+        self.species_adjusted_fitness_sum = dict()
+        # dict of species max fitness (array for fitness per generation)
+        self.species_max_fitness = dict()
+
+
+        # dict of species avg fitness (array for fitness per generation)
+        self.species_avg_fitness = dict()
+        # dict of representant
+        self.species_representant = dict()
+        # dict of list of genomes per specie, reset when new gen
+        self.genomes_per_specie = dict()
+
+        empty_species_id = filter(self.genomes_per_specie.items(),lambda specie_id, genomes: len(genomes) == 0)
+
+        for specie_id in empty_species_id:
+            self.species_id.remove(specie_id)
+            self.species_size.pop(specie_id)
+            self.species_adjusted_fitness_sum.pop(specie_id)
+            self.species_max_fitness.pop(specie_id)
+            self.species_avg_fitness.pop(specie_id)
+            self.species_representant.pop(specie_id)
+            self.genomes_per_specie.pop(specie_id)
+
 
     def initialize_species(self, population):
         self.gen +=1
@@ -163,6 +196,9 @@ class SpeciesManager:
 
         # Calculate average fitness for each species + gen max
         self.calculate_average_and_gen_max_fitness()
+
+        # remove species with no individuals
+        self.kill_empty_species()
 
         return
 
