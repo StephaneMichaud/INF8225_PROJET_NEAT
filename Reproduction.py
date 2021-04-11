@@ -162,7 +162,7 @@ def get_new_size_species(species_list, species_manager, reproduction_config):
             new_pop_total_size+=new_specie_size[species_id]
 
     else: #edge case when fitness sum = 0, assign equal prop to all species
-        equal_size = int(round(target_pop_size / len(species_id)))
+        equal_size = int(round(target_pop_size / len(species_list)))
         for species_id in species_list:
             new_specie_size[species_id] = max(min_pop_size, equal_size)
             new_pop_total_size+=new_specie_size[species_id]

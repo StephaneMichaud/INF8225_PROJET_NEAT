@@ -3,7 +3,7 @@ import operator
 from statistics import mean
 
 class SpeciesManager:
-    def __init__(self, threshold = 0.5, c1 = 1.0, c2 = 1.0, c3 = 0.4):
+    def __init__(self, threshold = 3, c1 = 1.0, c2 = 1.0, c3 = 0.4):
         self.threshold = threshold
         self.c1 = c1
         self.c2 = c2
@@ -36,19 +36,19 @@ class SpeciesManager:
 
     def get_species_size(self, species_id):
         if species_id in self.species_size:
-            return self.species_size[species_id].get([self.gen])
+            return self.species_size[species_id].get(self.gen)
         else:
             raise Exception('Invalid species id for species size')
 
     def get_species_max_fitness(self, species_id):
         if species_id in self.species_max_fitness:
-            return self.species_max_fitness[species_id].get([self.gen])
+            return self.species_max_fitness[species_id].get(self.gen)
         else:
             raise Exception('Invalid species id for max fitness')
 
     def get_species_avg_fitness(self, species_id):
         if species_id in self.species_avg_fitness:
-            return self.species_avg_fitness[species_id].get([self.gen])
+            return self.species_avg_fitness[species_id].get(self.gen)
         else:
             raise Exception('Invalid species id for avg fitness')
 
@@ -150,7 +150,7 @@ class SpeciesManager:
         for specie, dictionnary in self.species_max_fitness.items():
             if len(dictionnary) > reproduction_config.species_max_gen_stagnant:
                 max_fitness_per_gen = dictionnary[self.gen]
-                if max_fitness_per_gen[-1] > max_fitness_per_gen[-reproduction_config.species_max_gen_stagnant]:
+                if max_fitness_per_gen > dictionnary[self.gen-reproduction_config.species_max_gen_stagnant]:
                     valid_specie.append(specie)
             else:
                 valid_specie.append(specie)
@@ -173,7 +173,6 @@ class SpeciesManager:
             self.species_max_fitness.pop(specie_id)
             self.species_avg_fitness.pop(specie_id)
             self.species_representant.pop(specie_id)
-            self.genomes_per_specie.pop(specie_id)
 
 
     def initialize_species(self, population):
@@ -226,26 +225,29 @@ class SpeciesManager:
                 break
 
         if index_matching_genes != -1:
-            innov_b = set(g.innov_n for g in genes_b[index_matching_genes+1:-1])
+            innov_b = set(g.innov_n for g in genes_b[index_matching_genes+1:])
             matched_genes_at_end = []
             unmatched_genes_a = []
             
-            for g in genes_a[index_matching_genes+1:-1]:
+            for g in genes_a[index_matching_genes+1:]:
                 if g.innov_n in innov_b:
                     matched_genes_at_end.append(g)
                 else:
                     unmatched_genes_a.append(g)
 
 
-            innov_a = set(g.innov_n for g in genes_a[index_matching_genes+1:-1])
+            innov_a = set(g.innov_n for g in genes_a[index_matching_genes+1:])
             unmatched_genes_b = []
-            for g in genes_b[index_matching_genes+1:-1]:
+            for g in genes_b[index_matching_genes+1:]:
                 if g.innov_n not in innov_a:
                     unmatched_genes_b.append(g)
                     
-
-            matching_genes_a = sorted(genes_a[:index_matching_genes] + matched_genes_at_end, key=lambda g: g.innov_n)
-            matching_genes_b = sorted(genes_b[:index_matching_genes] + matched_genes_at_end, key=lambda g: g.innov_n)
+            if index_matching_genes == 0:
+                matching_genes_a = sorted([genes_a[index_matching_genes]] + matched_genes_at_end, key=lambda g: g.innov_n)
+                matching_genes_b = sorted([genes_b[index_matching_genes]] + matched_genes_at_end, key=lambda g: g.innov_n)
+            else:
+                matching_genes_a = sorted(genes_a[:index_matching_genes] + matched_genes_at_end, key=lambda g: g.innov_n)
+                matching_genes_b = sorted(genes_b[:index_matching_genes] + matched_genes_at_end, key=lambda g: g.innov_n)
         else:
             matching_genes_a = []
             matching_genes_b = []
