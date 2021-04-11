@@ -3,8 +3,9 @@ from Mutation import add_connection_mutation, add_node_mutation, alter_connectio
 import numpy as np
 import copy
 import random
+from munch import Munch
 #default value were taken from the paper
-def create_cross_over_genome(parentA, parentB, mutation_tracker, newNodePro = 0.03,
+def create_cross_over_genome(parentA, parentB, mutation_tracker, newNodeProb = 0.03,
                             newConnectionProb = 1, disableGeneProb = 0.75, alterConnectionProb = 0.8, newConnectionValueProb = 0.1):
 
     #set dominant parent in parentA
@@ -48,7 +49,7 @@ def create_cross_over_genome(parentA, parentB, mutation_tracker, newNodePro = 0.
         if key in parentB.c_genes:
             if parentA.c_genes[key].disable == True or parentB.c_genes[key] == True:
                 if np.random.uniform(0, 1) < disableGeneProb:
-                    new_c_genes[key].disable = True
+                    new_c_genes[key].disable = False
 
     
     #apply mutation to all connection
@@ -60,7 +61,7 @@ def create_cross_over_genome(parentA, parentB, mutation_tracker, newNodePro = 0.
     child_genome = Genome(parentA.input_size, parentA.output_size, new_n_genes, new_c_genes, parentA.generation + 1)
 
     #apply new nodes mutation
-    if np.random.uniform(0, 1) < newNodePro:
+    if np.random.uniform(0, 1) < newNodeProb:
        add_node_mutation(child_genome, mutation_tracker)
     #apply new connection mutation
     if np.random.uniform(0, 1) < newConnectionProb:
@@ -70,7 +71,7 @@ def create_cross_over_genome(parentA, parentB, mutation_tracker, newNodePro = 0.
 
 
 # asexual reproduction
-def create_asexual_genome(parent, newNodePro = 0.03, newConnectionProb = 0.05, alterConnectionProb = 0.8, newConnectionValueProb = 0.1):
+def create_asexual_genome(parent, mutation_tracker, newNodeProb = 0.03, newConnectionProb = 0.05, alterConnectionProb = 0.8, newConnectionValueProb = 0.1):
 
     new_c_genes = {}
     new_n_genes = {}
@@ -89,7 +90,7 @@ def create_asexual_genome(parent, newNodePro = 0.03, newConnectionProb = 0.05, a
     child_genome = Genome(parent.input_size, parent.output_size, new_n_genes, new_c_genes, parent.generation + 1)
 
     #apply new nodes mutation
-    if np.random.uniform(0, 1) < newNodePro:
+    if np.random.uniform(0, 1) < newNodeProb:
         add_node_mutation(child_genome, mutation_tracker)
     #apply new connection mutation
     if np.random.uniform(0, 1) < newConnectionProb:
@@ -103,6 +104,7 @@ def create_new_genome(input_size, output_size):
      nodes_genes[i] = NodeGene(input_nodes = None, output_nodes=[], neuron_type = 'i')
   for j in range(input_size, input_size + output_size):
      nodes_genes[j] = NodeGene(input_nodes = [], output_nodes= [],  neuron_type = 'o')
+
   return Genome(input_size=input_size, output_size=output_size, nodes_genes=nodes_genes, connection_genes={}, generation= 0)
 
 def create_initial_population(input_size, output_size, pop_size):
@@ -115,7 +117,26 @@ def create_initial_population(input_size, output_size, pop_size):
     pop = []
     for _ in range(pop_size):
         pop.append(create_new_genome(input_size, output_size))
+
     return pop
+
+
+def get_basic_reproduction_config():
+    "Will NOT instanciate target_pop_size"
+    "   newNodeProb, newConnectionProb, alterConnectionProb, newConnectionValueProb"
+    "   min_size_elite, inter_species_prob, species_weighted_inter, min_pop_size, target_pop_size"
+    reproduction_config = Munch()
+    reproduction_config.newNodeProb = 0.03
+    reproduction_config.newConnectionProb = 0.05
+    reproduction_config.alterConnectionProb = 0.8
+    reproduction_config.newConnectionValueProb = 0.1
+
+    reproduction_config.min_size_elite = 1
+    reproduction_config.min_pop_size = 1
+    reproduction_config.inter_species_prob = 0.001
+    reproduction_config.species_weighted_inter = True
+
+    return reproduction_config
 
 def get_new_size_species(species_list, species_manager, reproduction_config):
 
@@ -153,22 +174,59 @@ def get_new_size_species(species_list, species_manager, reproduction_config):
 
 
 
-def get_valid_genomes_with_fitness(genomes):
+def get_valid_genomes_with_fitness(genomes, partner = None):
     fitness = []
+    index = []
+    cmpt = 0
     for g in genomes:
         fitness.append(g.fitness)
-    fitness = fitness.sort()
-    genomes = genomes.sort(key=fitness)
+        index.append(cmpt)
+
+    if not partner is None:
+        assert len(genomes) > 1
+        index_to_remove = genomes.index(partner)
+        del index[index_to_remove]
+        del fitness[index_to_remove]
+    selected_index = random.choices(index, weights = fitness, k = 1)[0]
+
+    return genomes[selected_index]
+
+def get_inter_species_partner(species_list, species_manager, current_specie, reproduction_config):
+
+    fitness = []
+    index = []
+    cmpt = 0
+    index_to_remove = species_list.index(current_specie)
+
+    chosen_specie = -1
+    if reproduction_config.species_weighted_inter == True:
+        for id_specie in species_list:
+            fitness.append(species_manager.species_avg_fitness[id_specie][-1])
+            index.append(cmpt)
+        chosen_specie = random.choices(index, weights = fitness, k = 1)[0]
+        if chosen_specie == index_to_remove:
+            chosen_specie = (chosen_specie + 1) %  len(species_list)
+    else:
+        chosen_specie = random.randint(0, len(species_list) - 1)
+        if chosen_specie == index_to_remove:
+            chosen_specie = (chosen_specie + 1) %  len(species_list)
+    
+    genomes = species_manager.genomes_per_specie[chosen_specie]
+    return get_valid_genomes_with_fitness(genomes)
 
 
 
-
-def reproduce_new_gen(species_manager, reproduction_config, generation, logger = None):
-
+def reproduce_new_gen(species_manager, mutation_tracker,  reproduction_config, logger = None):
+    "Create a new generation based on the previous on (stored in species_manager)."
+    "The reproduction config should be a Munch containing all of the following:"
+    "   newNodeProb, newConnectionProb, alterConnectionProb, newConnectionValueProb"
+    "   min_size_elite, inter_species_prob, species_weighted_inter, min_pop_size, target_pop_size"
     #validity checks
     assert not species_manager is None
     assert not reproduction_config is None
-    assert generation > 0
+    assert not mutation_tracker is None
+
+    mutation_tracker.new_gen()
     
     #get valid species_list, remove one that did not progress for multiple gen
     species_list = []
@@ -188,33 +246,53 @@ def reproduce_new_gen(species_manager, reproduction_config, generation, logger =
         genomes = genomes.sort(key=fitness)
         current_size = new_size_species[species_id]
 
-        if current_size > 0:
-            if len(genomes) >= reproduction_config.min_size_elite:
-                #copy best genome unchanged
-                new_genomes.append(copy.deepcopy(genomes[-1]))
-                current_size -=1      
+        #if pop has a certain allowed size
+        if current_size >= reproduction_config.min_size_elite:
+            #copy best genome unchanged
+            new_genomes.append(copy.deepcopy(genomes[-1]))
+            new_genomes[-1].generation += 1
+            current_size -=1      
 
-        #if population is left
-        # check for cross species mating
+        #count how many reproduction in those left are of the type inter species
+        if len(new_size_species) > 1:
+            interspeciescount = 0
+            for _ in range(current_size):
+                interspeciescount += 1 if random.uniform(0, 1) < reproduction_config.inter_species_prob else 0
+            
+            for _ in range(interspeciescount):
+                #select partner in current species
+                partnerA = get_valid_genomes_with_fitness(genomes)
+                #select partner in other species
+                partnerB = get_inter_species_partner(species_list, species_manager, species_id, reproduction_config)
+                child = create_cross_over_genome(parentA=parentA, parentB=parentB, mutation_tracker= mutation_tracker,
+                                                    newNodeProb=reproduction_config.newNodeProb, 
+                                                    newConnectionProb = reproduction_config.newConnectionProb, 
+                                                    alterConnectionProb = reproduction_config.alterConnectionProb, 
+                                                    newConnectionValueProb = reproduction_config.newConnectionValueProb)
+                new_genomes.append(child)
+                current_size-=1
 
 
+
+        # intra reproduction for all child left
         while current_size != 0:
             if len(genomes) == 1:
-                new_gen = create_asexual_genome(parent=genomes[-1],
-                                                newNodePro=reproduction_config.newNodePro, 
+                child = create_asexual_genome(parent=genomes[-1], mutation_tracker= mutation_tracker,
+                                                newNodeProb=reproduction_config.newNodeProb, 
                                                 newConnectionProb = reproduction_config.newConnectionProb, 
                                                 alterConnectionProb = reproduction_config.alterConnectionProb, 
                                                 newConnectionValueProb = reproduction_config.newConnectionValueProb)
-                new_genomes.append()
+                new_genomes.append(child)
+            else:
+                parentA = get_valid_genomes_with_fitness(genomes)
+                parentB = get_valid_genomes_with_fitness(genomes, parentA)
+                child = create_cross_over_genome(parentA=parentA, parentB=parentB, mutation_tracker= mutation_tracker,
+                                                newNodeProb=reproduction_config.newNodeProb, 
+                                                newConnectionProb = reproduction_config.newConnectionProb, 
+                                                alterConnectionProb = reproduction_config.alterConnectionProb, 
+                                                newConnectionValueProb = reproduction_config.newConnectionValueProb)
+                new_genomes.append(child)
+            current_size-=1
 
-        #check for rest of mating
-            #if pop = 1, asexual
-            #else cross
-
-
-        
-
-
-
-    return
+    return new_genomes
 
