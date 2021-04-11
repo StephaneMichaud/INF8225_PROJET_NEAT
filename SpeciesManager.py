@@ -161,7 +161,7 @@ class SpeciesManager:
         # dict of list of genomes per specie, reset when new gen
         self.genomes_per_specie = dict()
 
-        empty_species_id = dict(filter(self.genomes_per_specie.items(),lambda specie_id, genomes: len(genomes) == 0)).values()
+        empty_species_id = dict(filter(self.genomes_per_specie.items(),lambda specie_id, genomes: len(genomes) == 0)).keys()
 
         for specie_id in empty_species_id:
             self.species_id.remove(specie_id)
