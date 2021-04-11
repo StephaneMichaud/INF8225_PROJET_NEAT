@@ -119,6 +119,25 @@ class SpeciesManager:
     def get_valid_species_list(self, reproduction_config):
         # filter species that did not improve for a certain number of generation
         # if max fitness all species did not improve for a certain number of generation, only return top two
+        # reproduction_config.species_max_gen_stagnant = 15
+        # reproduction_config.global_max_gen_stagnant = 20
+
+
+        # return the 2 best species id in the last generations if the global
+        # fitness has not improved
+        if len(self.max_fitness) > reproduction_config.global_max_gen_stagnant and \
+            self.max_fitness[-1] < self.max_fitness[-reproduction_config.global_max_gen_stagnant]:
+            temp = sorted(self.max_fitness, key=self.max_fitness.get)
+            return temp[-2:-1]
+
+
+        valid_specie = []
+        for specie, max_fitness_per_gen in self.species_max_fitness.items():
+            if len(max_fitness_per_gen) > reproduction_config.species_max_gen_stagnant \
+                and max_fitness_per_gen[-1] > max_fitness_per_gen[-reproduction_config.species_max_gen_stagnant]:
+                valid_specie.append(specie)
+
+        
         return
 
     def initialize_species(self, population):
