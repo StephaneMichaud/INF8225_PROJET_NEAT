@@ -76,7 +76,7 @@ def check_cyclic_connections(genome, s_node, t_node):
 
 #add a new connection between two unpreviously unconnected node. Must check if a cycle is formed, If so, search for another pair of nodes.
 #Since the check for each valid pair of nodes is complicated, we will instead try a number of attempt to add a connection by selecting random nodes.
-def add_connection_mutation(genome, mutation_tracker, max_attempt = 10, no_cycle = False):
+def add_connection_mutation(genome, mutation_tracker, max_attempt = 20, no_cycle = False):
   "Add new connection connecting two previously unconnected neurons."
 
   in_size = genome.input_size

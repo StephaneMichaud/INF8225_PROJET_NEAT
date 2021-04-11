@@ -98,6 +98,7 @@ def create_asexual_genome(parent, mutation_tracker, newNodeProb = 0.03, newConne
 
     return child_genome
 
+import Mutation
 def create_new_genome(input_size, output_size):
   nodes_genes = {}
   for i in range(0, input_size):
@@ -105,7 +106,14 @@ def create_new_genome(input_size, output_size):
   for j in range(input_size, input_size + output_size):
      nodes_genes[j] = NodeGene(input_nodes = [], output_nodes= [],  neuron_type = 'o')
 
-  return Genome(input_size=input_size, output_size=output_size, nodes_genes=nodes_genes, connection_genes={}, generation= 0)
+  cpt = input_size+output_size
+  connection_genes = dict()
+  for i in range(0, input_size):
+      for j in range(input_size, input_size+output_size):
+          connection_genes[i,j] = ConnectionGene(cpt, Mutation.get_new_weight(), False)
+          cpt+=1
+
+  return Genome(input_size=input_size, output_size=output_size, nodes_genes=nodes_genes, connection_genes=connection_genes, generation= 0)
 
 def create_initial_population(input_size, output_size, pop_size):
 
@@ -136,8 +144,8 @@ def get_basic_reproduction_config():
     reproduction_config.inter_species_prob = 0.001
     reproduction_config.species_weighted_inter = True
 
-    reproduction_config.species_max_gen_stagnant = 15
-    reproduction_config.global_max_gen_stagnant = 20
+    reproduction_config.species_max_gen_stagnant = 30
+    reproduction_config.global_max_gen_stagnant = 40
 
     return reproduction_config
 
@@ -237,7 +245,7 @@ def reproduce_new_gen(species_manager, mutation_tracker,  reproduction_config, l
         print('do something with logger for stagnant species') 
 
     if len(species_list) == 0: #will need to restart from scratch, can happen also if max score has been reached
-        return []
+        raise Exception()
 
     new_size_species = get_new_size_species(species_list, species_manager, reproduction_config)
 
@@ -264,9 +272,9 @@ def reproduce_new_gen(species_manager, mutation_tracker,  reproduction_config, l
             
             for _ in range(interspeciescount):
                 #select partner in current species
-                partnerA = get_valid_genomes_with_fitness(genomes)
+                parentA = get_valid_genomes_with_fitness(genomes)
                 #select partner in other species
-                partnerB = get_inter_species_partner(species_list, species_manager, species_id, reproduction_config)
+                parentB = get_inter_species_partner(species_list, species_manager, species_id, reproduction_config)
                 child = create_cross_over_genome(parentA=parentA, parentB=parentB, mutation_tracker= mutation_tracker,
                                                     newNodeProb=reproduction_config.newNodeProb, 
                                                     newConnectionProb = reproduction_config.newConnectionProb, 

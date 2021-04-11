@@ -137,13 +137,14 @@ class SpeciesManager:
         # reproduction_config.species_max_gen_stagnant = 15
         # reproduction_config.global_max_gen_stagnant = 20
 
+        # return self.species_id
 
         # return the 2 best species id in the last generations if the global
         # fitness has not improved
         if len(self.max_fitness) > reproduction_config.global_max_gen_stagnant and \
             self.max_fitness[-1] < self.max_fitness[-reproduction_config.global_max_gen_stagnant]:
             temp = sorted(self.species_max_fitness, key=self.species_max_fitness.get)
-            return temp[-2:-1]
+            return temp[len(temp)-2:]
 
 
         valid_specie = []
@@ -155,7 +156,6 @@ class SpeciesManager:
             else:
                 valid_specie.append(specie)
                 
-
         
         return valid_specie
 
@@ -210,9 +210,9 @@ class SpeciesManager:
         if genome_a.get_nb_genes() + genome_b.get_nb_genes() == 0:
             return 0
         if genome_a.get_nb_genes() == 0:
-            return self.c1
+            return self.threshold + 1
         if genome_b.get_nb_genes() == 0:
-            return self.c1
+            return self.threshold + 1
 
         genes_a = sorted(list(genome_a.c_genes.values()), key=lambda g: g.innov_n)
         genes_b = sorted(list(genome_b.c_genes.values()), key=lambda g: g.innov_n)
@@ -269,9 +269,10 @@ class SpeciesManager:
         W = 0 if index_matching_genes == -1 else mean(abs(gene_a.w_value-gene_b.w_value) for gene_a, gene_b in zip(matching_genes_a, matching_genes_b))
         N = max(genome_a.get_nb_genes(), genome_b.get_nb_genes())
 
+
         return self.c1*E/N + self.c2*D/N + self.c3*W
     
 
 
     def are_same_species(self, genome_a, genome_b):
-        return self.compatibility_distance(genome_a, genome_b) < self.threshold
+        return self.compatibility_distance(genome_a, genome_b)  < self.threshold
