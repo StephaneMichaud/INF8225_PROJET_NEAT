@@ -143,8 +143,22 @@ class SpeciesManager:
         # fitness has not improved
         if len(self.max_fitness) > reproduction_config.global_max_gen_stagnant and \
             self.max_fitness[-1] < self.max_fitness[-reproduction_config.global_max_gen_stagnant]:
-            temp = sorted(self.species_max_fitness, key=self.species_max_fitness.get)
-            return temp[len(temp)-2:]
+            first_max = 0
+            first_id = -1
+            second_max = 0
+            second_id = -1
+            for specie_id in self.species_max_fitness:
+                if self.gen in self.species_max_fitness[specie_id]:
+                    if self.species_max_fitness[specie_id][self.gen] > first_max:
+                        second_max = first_max
+                        second_id = first_id
+                        first_max = self.species_max_fitness[specie_id][self.gen]
+                        first_id = specie_id
+                    elif self.species_max_fitness[specie_id][self.gen] > second_max:
+                        second_max = self.species_max_fitness[specie_id][self.gen]
+                        second_id = specie_id
+
+            return [first_id, second_id]
 
 
         valid_specie = []
@@ -204,6 +218,36 @@ class SpeciesManager:
 
         return
 
+
+    def compatibility_distance2(self, genome_a, genome_b):
+        shared_genes = []
+        genes_a = [c for c in genome_a.c_genes.items()]
+        genes_b = [c for c in genome_b.c_genes.items()]
+
+        max_innov_a = 0 if len(genes_a) == 0 else genes_a[-1][1].innov_n
+        max_innov_b = 0 if len(genes_b) == 0 else genes_b[-1][1].innov_n
+
+        E = 0
+        D = 0
+        for n in genes_a:
+            if n[0] not in genome_b.c_genes:
+                if n[1].innov_n > max_innov_b:
+                    E+=1
+                else:
+                    D+=1
+            else:
+                shared_genes.append(abs(genome_a.c_genes[n[0]].w_value - genome_b.c_genes[n[0]].w_value))
+
+        for n in genes_b:
+            if n[0] not in genome_a.c_genes:
+                if n[1].innov_n > max_innov_a:
+                    E+=1
+                else:
+                    D+=1
+        N = max(genome_a.get_nb_genes(), genome_b.get_nb_genes())
+        N = N if N >= 20 else 1.0
+        W = mean(shared_genes) if len(shared_genes) > 0 else 0
+        return self.c1*E/N + self.c2*D/N + self.c3*W
 
 
     def compatibility_distance(self, genome_a, genome_b):
@@ -268,6 +312,7 @@ class SpeciesManager:
         D = len(unmatched_genes_b) + len(unmatched_genes_a) - E
         W = 0 if index_matching_genes == -1 else mean(abs(gene_a.w_value-gene_b.w_value) for gene_a, gene_b in zip(matching_genes_a, matching_genes_b))
         N = max(genome_a.get_nb_genes(), genome_b.get_nb_genes())
+        N = N if N >= 20 else 1.0
 
 
         return self.c1*E/N + self.c2*D/N + self.c3*W
@@ -275,4 +320,4 @@ class SpeciesManager:
 
 
     def are_same_species(self, genome_a, genome_b):
-        return self.compatibility_distance(genome_a, genome_b)  < self.threshold
+        return self.compatibility_distance2(genome_a, genome_b)  < self.threshold

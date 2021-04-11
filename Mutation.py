@@ -36,11 +36,11 @@ class MutationTracker:
 
 # really close to 1 to not pertub the genome too much
 def get_new_node_mutant_weight():
-  return np.random.normal(1, 0.0001)
+  return 1
 
 
 def get_new_weight():
-  return np.random.normal(0, 1)
+  return np.random.uniform(-1, 1)
 
 def check_cyclic_connections(genome, s_node, t_node):
   'Check for cyclic graph when we add a new connection'
@@ -76,7 +76,7 @@ def check_cyclic_connections(genome, s_node, t_node):
 
 #add a new connection between two unpreviously unconnected node. Must check if a cycle is formed, If so, search for another pair of nodes.
 #Since the check for each valid pair of nodes is complicated, we will instead try a number of attempt to add a connection by selecting random nodes.
-def add_connection_mutation(genome, mutation_tracker, max_attempt = 20, no_cycle = False):
+def add_connection_mutation(genome, mutation_tracker, max_attempt = 20, no_cycle = True):
   "Add new connection connecting two previously unconnected neurons."
 
   in_size = genome.input_size
@@ -163,7 +163,7 @@ def alter_connection_mutation(genome, new_val_threshold_chance = 0.1):
 #mutate a given ConnectionGene
 def alter_connection(c_gene, new_val_threshold_chance = 0.1):
   if np.random.uniform(0, 1) < new_val_threshold_chance:
-    c_gene.w_value = get_new_weight()
+      c_gene.w_value = get_new_weight()
   else:
-    c_gene.w_value += np.random.normal(0, 0.1) #TODO check if value are good, may need to ajust distribution
+    c_gene.w_value += np.random.uniform(-1, 1) * 0.5
   return c_gene
