@@ -202,3 +202,48 @@ def create_test_genome():
 
 
   return Genome.Genome(input_size=input_size, output_size=output_size, nodes_genes=nodes_genes, connection_genes= connect_genes, generation=0)
+
+def create_test_xor():
+  input_size = 3
+  output_size = 1
+  connect_genes = {}
+  nodes_genes = {}
+
+  for i in range(0, input_size):
+     nodes_genes[i] = Genome.NodeGene(input_nodes = None, output_nodes=[], neuron_type = 'i')
+  for j in range(input_size, input_size + output_size):
+     nodes_genes[j] = Genome.NodeGene(input_nodes = [], output_nodes= [],  neuron_type = 'o')
+
+  #iter 1
+  nodes_genes[0].output_nodes.append(3)
+  nodes_genes[3].input_nodes.append(0)
+  connect_genes[0, 3] = Genome.ConnectionGene(innov_n = 5, w_value = get_new_weight(), disable= False)
+
+  # iter 3
+  nodes_genes[4] = Genome.NodeGene(input_nodes = [0], output_nodes=[3], neuron_type = 'h')
+  nodes_genes[0].output_nodes.append(4)
+  nodes_genes[3].input_nodes.append(4)
+  connect_genes[0, 4] = Genome.ConnectionGene(innov_n = 4, w_value = get_new_weight(), disable= False)
+  connect_genes[4, 3] = Genome.ConnectionGene(innov_n = 5, w_value = get_new_weight(), disable= False)
+
+   #iter 1
+  nodes_genes[1].output_nodes.append(3)
+  nodes_genes[3].input_nodes.append(1)
+  connect_genes[1, 3] = Genome.ConnectionGene(innov_n = 6, w_value = get_new_weight(), disable= False)
+
+   #iter 1
+  nodes_genes[1].output_nodes.append(4)
+  nodes_genes[4].input_nodes.append(1)
+  connect_genes[1, 4] = Genome.ConnectionGene(innov_n = 7, w_value = get_new_weight(), disable= False)
+
+     #iter 1
+  nodes_genes[2].output_nodes.append(4)
+  nodes_genes[4].input_nodes.append(2)
+  connect_genes[2, 4] = Genome.ConnectionGene(innov_n = 8, w_value = get_new_weight(), disable= False)
+
+     #iter 1
+  nodes_genes[2].output_nodes.append(3)
+  nodes_genes[3].input_nodes.append(2)
+  connect_genes[2, 3] = Genome.ConnectionGene(innov_n = 9, w_value = get_new_weight(), disable= False)
+
+  return Genome.Genome(input_size=input_size, output_size=output_size, nodes_genes=nodes_genes, connection_genes= connect_genes, generation=0)

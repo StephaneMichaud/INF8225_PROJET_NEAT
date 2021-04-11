@@ -41,7 +41,7 @@ if __name__ == '__main__':
     for i in range(episode_count):
         ob = env.reset()
         while True:
-            action = agent.act(ob, reward, done)
+            action = agent.act(ob, reward, done) # genome.feed_forward(ob)
             ob, reward, done, info = env.step(action)
             if done:
                 print(agent.reward)
