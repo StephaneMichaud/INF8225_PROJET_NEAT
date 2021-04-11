@@ -136,6 +136,9 @@ def get_basic_reproduction_config():
     reproduction_config.inter_species_prob = 0.001
     reproduction_config.species_weighted_inter = True
 
+    reproduction_config.species_max_gen_stagnant = 15
+    reproduction_config.global_max_gen_stagnant = 20
+
     return reproduction_config
 
 def get_new_size_species(species_list, species_manager, reproduction_config):
@@ -151,7 +154,7 @@ def get_new_size_species(species_list, species_manager, reproduction_config):
     new_pop_total_size = 0
     if fiteness_ajusted_sum > 0:
         for species_id in species_list:
-            species_ajfitness = species_manager.ajfitness[species_id][-1]
+            species_ajfitness = species_manager.get_species_adjusted_fitness_sum(species_id)
 
             proportion = species_ajfitness/fiteness_ajusted_sum
             pop_size = int(round(proportion * target_pop_size))
@@ -179,7 +182,7 @@ def get_valid_genomes_with_fitness(genomes, partner = None):
     index = []
     cmpt = 0
     for g in genomes:
-        fitness.append(g.fitness)
+        fitness.append(g.fitness * g.fitness)
         index.append(cmpt)
 
     if not partner is None:
@@ -201,7 +204,7 @@ def get_inter_species_partner(species_list, species_manager, current_specie, rep
     chosen_specie = -1
     if reproduction_config.species_weighted_inter == True:
         for id_specie in species_list:
-            fitness.append(species_manager.species_avg_fitness[id_specie][-1])
+            fitness.append(species_manager.get_species_avg_fitness(id_specie))
             index.append(cmpt)
         chosen_specie = random.choices(index, weights = fitness, k = 1)[0]
         if chosen_specie == index_to_remove:
