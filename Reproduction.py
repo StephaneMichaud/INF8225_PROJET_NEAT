@@ -144,7 +144,7 @@ def get_basic_reproduction_config():
 def get_new_size_species(species_list, species_manager, reproduction_config):
 
     #get the sum of ajusted fitness
-    fiteness_ajusted_sum = sum([genome.fitness for genome in population])
+    fitness_ajusted_sum = sum([species_manager.get_species_adjusted_fitness_sum(specie_id) for specie_id in species_list])
 
     min_pop_size = reproduction_config.min_pop_size
     target_pop_size = reproduction_config.target_pop_size
@@ -152,11 +152,11 @@ def get_new_size_species(species_list, species_manager, reproduction_config):
 
     #compute new species size
     new_pop_total_size = 0
-    if fiteness_ajusted_sum > 0:
+    if fitness_ajusted_sum > 0:
         for species_id in species_list:
             species_ajfitness = species_manager.get_species_adjusted_fitness_sum(species_id)
 
-            proportion = species_ajfitness/fiteness_ajusted_sum
+            proportion = species_ajfitness/fitness_ajusted_sum
             pop_size = int(round(proportion * target_pop_size))
             new_specie_size[species_id] =  max(min_pop_size, pop_size)
             new_pop_total_size+=new_specie_size[species_id]
@@ -171,7 +171,7 @@ def get_new_size_species(species_list, species_manager, reproduction_config):
     norm = float(new_pop_total_size) / target_pop_size
 
     for species_id in new_specie_size:
-        new_specie_size[species_id] = max(min_species_size, int(round(new_specie_size[species_id] * norm)))
+        new_specie_size[species_id] = max(reproduction_config.min_pop_size, int(round(new_specie_size[species_id] * norm)))
 
     return new_specie_size
 
@@ -246,7 +246,7 @@ def reproduce_new_gen(species_manager, mutation_tracker,  reproduction_config, l
 
         genomes = species_manager.genomes_per_specie[species_id]
         # sort gen in species by fitness
-        genomes = genomes.sort(key=fitness)
+        genomes = list(sorted(genomes, key=lambda g: g.fitness))
         current_size = new_size_species[species_id]
 
         #if pop has a certain allowed size

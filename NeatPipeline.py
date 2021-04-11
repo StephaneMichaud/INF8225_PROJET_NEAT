@@ -15,6 +15,7 @@ def neat_pipeline(population_size, input_size, output_size, evaluator, outputh_p
     # TODO create species manager
     speciesManager = SpeciesManager()
     reproduction_config = get_basic_reproduction_config()
+    reproduction_config.target_pop_size = population_size
 
     # TODO create logger
     current_population = None

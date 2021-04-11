@@ -47,7 +47,7 @@ class Genome:
     self.ajfitness = None
   
   def get_nb_genes(self):
-    return self.c_genes
+    return len(self.c_genes)
 
   def feed_forward(self, input, max_loop = 1):
 
