@@ -136,17 +136,39 @@ class SpeciesManager:
 
 
     def compatibility_distance(self, genome_a, genome_b):
-        genes_a = sorted(genome_a.c_genes.values(), key=operator.attrgetter('innov_number'))
-        genes_b = sorted(genome_b.c_genes.values(), key=operator.attrgetter('innov_number'))
+        genes_a = sorted(genome_a.c_genes.values(), key=innov_n)
+        genes_b = sorted(genome_b.c_genes.values(), key=innov_n)
 
         index_matching_genes = 0
         for index, gene_a, gene_b in enumerate(zip(genes_a, genes_b)):
             if gene_a.innov_n != gene_b.innov_n:
                 index_matching_genes = index
                 break
+
+        innov_b = set(g.innov_number for g in genes_b[index_matching_genes+1:-1])
+        matched_genes_at_end = []
+        unmatched_genes_a = []
         
-        matching_genes_a, unmatched_genes_a = genes_a[:index_matching_genes], genes_a[index_matching_genes+1:-1]
-        matching_genes_b, unmatched_genes_b = genes_b[:index_matching_genes], genes_b[index_matching_genes+1:-1]
+        for g in genes_a[index_matching_genes+1:-1]:
+            if g.innov_n in innov_b:
+                matched_genes_at_end.append(g)
+            else:
+                unmatched_genes_a.append(g)
+
+
+        innov_a = set(g.innov_number for g in genes_a[index_matching_genes+1:-1])
+        unmatched_genes_b = []
+        for g in genes_b[index_matching_genes+1:-1]:
+            if g.innov_n not in innov_a:
+                unmatched_genes_b.append(g)
+                
+
+        matching_genes_a = sorted(genes_a[:index_matching_genes] + matched_genes_at_end, key=innov_n)
+        matching_genes_b = sorted(genes_b[:index_matching_genes] + matched_genes_at_end, key=innov_n)
+
+
+        unmatched_genes_a = sorted(unmatched_genes_a, key=innov_n)
+        unmatched_genes_b = sorted(unmatched_genes_b, key=innov_n)
 
         max_innov_a = unmatched_genes_a[-1].innov_number
         max_innov_b = unmatched_genes_b[-1].innov_number
