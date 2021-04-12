@@ -22,6 +22,9 @@ class SpeciesManager:
 
         # max fitness for all species per gen
         self.max_fitness = []
+        # current max genome fitness
+        self.current_max_genome = None
+
         # dict of species avg fitness (array for fitness per generation)
         self.species_avg_fitness = dict()
         # dict of representant
@@ -66,6 +69,8 @@ class SpeciesManager:
         else:
             raise Exception('Invalid species id for ajusted fitness sum')
 
+    def get_current_max_genome(self):
+        return self.current_max_genome
 
     def add_genome_to_specie(self, genome, specie_id):
         if not self.gen in self.species_size[specie_id]:
@@ -138,6 +143,7 @@ class SpeciesManager:
                 sum_fitness += genome.fitness
                 if genome.fitness > maximum_fitness:
                     maximum_fitness = genome.fitness
+                    self.current_max_genome = genome
             avg_fitness = sum_fitness/len(genomes)
 
             self.species_avg_fitness[specie_id][self.gen] = avg_fitness

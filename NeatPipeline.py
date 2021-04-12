@@ -6,7 +6,7 @@ from GenomeUtils import print_genome2
 
 
 
-def neat_pipeline(population_size, input_size, output_size, evaluator, outputh_path, max_gen, fitness_goal):
+def neat_pipeline(population_size, input_size, output_size, evaluator, outputh_path, max_gen, fitness_goal, logger, logging = True):
 
     #make validity/integrity checks
     
@@ -44,9 +44,14 @@ def neat_pipeline(population_size, input_size, output_size, evaluator, outputh_p
         # alter fitness score with species manager
         
         # save/log species stats
+        if logging:
+            logger.log_best(speciesManager.get_current_max_genome())
+            for species_id in speciesManager.species_max_genome.keys():
+                logger.log_species(species_id, speciesManager.get_species_max_genome(species_id), speciesManager.get_species_size(species_id), gen)
+
     print('is over')
     for r_genome in speciesManager.species_representant:
-        print_genome2(speciesManager.species_representant[r_genome])
+        #print_genome2(speciesManager.species_representant[r_genome])
         print(speciesManager.species_representant[r_genome].fitness)
 
     stop =1

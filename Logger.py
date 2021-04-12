@@ -1,5 +1,5 @@
 from bokeh.plotting import figure, show
-from mathplotlib import pyplot as plt
+from matplotlib import pyplot as plt
 
 class Event:
     def __init__(self,specie_id, gen, typeEvent = "add"):
@@ -58,15 +58,23 @@ class Logger:
             self.species_gen.append([])
 
         if species_id not in self.species_gen[gen]:
-            self.species_gen[gen].append()
+            self.species_gen[gen].append(species_id)
 
-    def print_species_fitness():
+    def print_fitness(self):
+        fitness = [x.fitness for x in self.best_genome]
+        plt.figure()
+        plt.title("Evolution de la fitness")
+        plt.plot(range(len(fitness)), fitness)
+        plt.show()
+
+    def print_species_fitness(self):
         #for gen in range(len(self.species_gen)):
         #    species = self.species_gen[gen]
         #    for species_id in species:
         plt.figure()
+        plt.title("Evolution de la fitness par espèces")
         for species_id, specie in self.all_species.items():
-            X = range(specie.start_gen, specie.start_gen + len(self.genomes))
+            X = range(specie.start_gen, specie.start_gen + len(specie.genomes))
             Y = specie.fitness
             plt.plot(X,Y)
         plt.show()
