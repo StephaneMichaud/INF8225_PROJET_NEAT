@@ -141,24 +141,25 @@ class SpeciesManager:
 
         # return the 2 best species id in the last generations if the global
         # fitness has not improved
-        if len(self.max_fitness) > reproduction_config.global_max_gen_stagnant and \
-            self.max_fitness[-1] < self.max_fitness[-reproduction_config.global_max_gen_stagnant]:
-            first_max = 0
-            first_id = -1
-            second_max = 0
-            second_id = -1
-            for specie_id in self.species_max_fitness:
-                if self.gen in self.species_max_fitness[specie_id]:
-                    if self.species_max_fitness[specie_id][self.gen] > first_max:
-                        second_max = first_max
-                        second_id = first_id
-                        first_max = self.species_max_fitness[specie_id][self.gen]
-                        first_id = specie_id
-                    elif self.species_max_fitness[specie_id][self.gen] > second_max:
-                        second_max = self.species_max_fitness[specie_id][self.gen]
-                        second_id = specie_id
+        if len(self.species_id) > 2:
+            if len(self.max_fitness) > reproduction_config.global_max_gen_stagnant and \
+                self.max_fitness[-1] < self.max_fitness[-reproduction_config.global_max_gen_stagnant]:
+                first_max = 0
+                first_id = -1
+                second_max = 0
+                second_id = -1
+                for specie_id in self.species_max_fitness:
+                    if self.gen in self.species_max_fitness[specie_id]:
+                        if self.species_max_fitness[specie_id][self.gen] > first_max:
+                            second_max = first_max
+                            second_id = first_id
+                            first_max = self.species_max_fitness[specie_id][self.gen]
+                            first_id = specie_id
+                        elif self.species_max_fitness[specie_id][self.gen] > second_max:
+                            second_max = self.species_max_fitness[specie_id][self.gen]
+                            second_id = specie_id
 
-            return [first_id, second_id]
+                return [first_id, second_id]
 
 
         valid_specie = []
@@ -166,6 +167,8 @@ class SpeciesManager:
             if len(dictionnary) > reproduction_config.species_max_gen_stagnant:
                 max_fitness_per_gen = dictionnary[self.gen]
                 if max_fitness_per_gen > dictionnary[self.gen-reproduction_config.species_max_gen_stagnant]:
+                    valid_specie.append(specie)
+                elif max_fitness_per_gen >= self.max_fitness[-1]:
                     valid_specie.append(specie)
             else:
                 valid_specie.append(specie)

@@ -45,9 +45,9 @@ def neat_pipeline(population_size, input_size, output_size, evaluator, outputh_p
         
         # save/log species stats
     print('is over')
-    for r_genome in speciesManager.species_representant:
-        print_genome2(speciesManager.species_representant[r_genome])
-        print(speciesManager.species_representant[r_genome].fitness)
+    # for r_genome in speciesManager.species_representant:
+    #     print_genome2(speciesManager.species_representant[r_genome])
+    #     print(speciesManager.species_representant[r_genome].fitness)
 
     stop =1
     #save logger/species stats
