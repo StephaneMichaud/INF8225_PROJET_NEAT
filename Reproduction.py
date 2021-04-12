@@ -146,10 +146,15 @@ def get_basic_reproduction_config():
     reproduction_config.species_weighted_inter = False
     reproduction_config.disable_gen_prob = 0.75
     reproduction_config.asexual_prop = 0.25
-    reproduction_config.repro_cutoff = 0.20
+    reproduction_config.repro_cutoff = 0.20 #  peut etre rendre utile
 
     reproduction_config.species_max_gen_stagnant = 15
     reproduction_config.global_max_gen_stagnant = 20
+
+    # max ou average for species cross over chossing
+    # borne pour weights
+    # multiplicator for mutation
+    # checker pour affectation des weights
 
     return reproduction_config
 
