@@ -30,8 +30,8 @@ class MutationTracker:
   def new_gen(self):
     'reset tracker of mutation when in a new gen'
     self.gen +=1
-    self.add_node_track = {}
-    self.add_connect_track = {}
+    #self.add_node_track = {}
+    #self.add_connect_track = {}
 
 
 # really close to 1 to not pertub the genome too much

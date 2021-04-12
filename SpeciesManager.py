@@ -17,9 +17,14 @@ class SpeciesManager:
         self.species_adjusted_fitness_sum = dict()
         # dict of species max fitness (array for fitness per generation)
         self.species_max_fitness = dict()
+        # dict of genome which maximise fitness
+        self.species_max_genome = dict() 
 
         # max fitness for all species per gen
         self.max_fitness = []
+        # current max genome fitness
+        self.current_max_genome = None
+
         # dict of species avg fitness (array for fitness per generation)
         self.species_avg_fitness = dict()
         # dict of representant
@@ -52,12 +57,20 @@ class SpeciesManager:
         else:
             raise Exception('Invalid species id for avg fitness')
 
+    def get_species_max_genome(self, species_id):
+        if species_id in self.species_max_genome:
+            return self.species_max_genome[species_id].get(self.gen)
+        else:
+            raise Exception('Invalid species id for max genome')
+
     def get_species_adjusted_fitness_sum(self, species_id):
         if species_id in self.species_adjusted_fitness_sum:
             return self.species_adjusted_fitness_sum[species_id][self.gen]
         else:
             raise Exception('Invalid species id for ajusted fitness sum')
 
+    def get_current_max_genome(self):
+        return self.current_max_genome
 
     def add_genome_to_specie(self, genome, specie_id):
         if not self.gen in self.species_size[specie_id]:
@@ -66,8 +79,10 @@ class SpeciesManager:
 
         if not self.gen in self.species_max_fitness[specie_id]:
             self.species_max_fitness[specie_id][self.gen] = genome.fitness
+            self.species_max_genome[specie_id][self.gen] = genome
         elif self.species_max_fitness[specie_id][self.gen] < genome.fitness:
             self.species_max_fitness[specie_id][self.gen] = genome.fitness
+            self.species_max_genome[specie_id][self.gen] = genome
         
         if not specie_id in self.genomes_per_specie:
             self.genomes_per_specie[specie_id] = [genome]
@@ -86,6 +101,8 @@ class SpeciesManager:
         self.species_representant[self.current_specie_id] = representant
         self.species_max_fitness[self.current_specie_id] = dict()
         self.species_max_fitness[self.current_specie_id][self.gen] = representant.fitness
+        self.species_max_genome[self.current_specie_id] = dict()
+        self.species_max_genome[self.current_specie_id][self.gen] = representant
         self.genomes_per_specie[self.current_specie_id] = [ representant ]
 
         return self.current_specie_id
@@ -126,6 +143,7 @@ class SpeciesManager:
                 sum_fitness += genome.fitness
                 if genome.fitness > maximum_fitness:
                     maximum_fitness = genome.fitness
+                    self.current_max_genome = genome
             avg_fitness = sum_fitness/len(genomes)
 
             self.species_avg_fitness[specie_id][self.gen] = avg_fitness
@@ -188,6 +206,7 @@ class SpeciesManager:
             self.species_size.pop(specie_id)
             self.species_adjusted_fitness_sum.pop(specie_id)
             self.species_max_fitness.pop(specie_id)
+            self.species_max_genome.pop(specie_id)
             self.species_avg_fitness.pop(specie_id)
             self.species_representant.pop(specie_id)
 

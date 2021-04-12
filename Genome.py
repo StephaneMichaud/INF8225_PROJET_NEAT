@@ -18,7 +18,7 @@ class ConnectionGene:
     disable: bool
 
 
-def neat_sigmoid(z):
+def neat_sigmoid(value):
   custom_mul = 4.9
   x= value * custom_mul
   if x >= 0:
