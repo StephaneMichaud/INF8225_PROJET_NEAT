@@ -69,6 +69,12 @@ class SpeciesManager:
         else:
             raise Exception('Invalid species id for ajusted fitness sum')
 
+    def get_species_adjusted_fitness_mean(self, species_id):
+        if species_id in self.species_adjusted_fitness_sum:
+            return self.species_adjusted_fitness_sum[species_id][self.gen] / self.species_size[species_id][self.gen]
+        else:
+            raise Exception('Invalid species id for ajusted fitness sum')
+
     def get_current_max_genome(self):
         return self.current_max_genome
 
