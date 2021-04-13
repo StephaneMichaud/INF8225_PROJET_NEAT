@@ -156,13 +156,16 @@ def get_basic_reproduction_config():
     # borne pour weights
     # multiplicator for mutation
     # checker pour affectation des weights
+    # allow cycle
+    # how many cycle are allowed
+
 
     return reproduction_config
 
 def get_new_size_species(species_list, species_manager, reproduction_config):
 
     #get the sum of ajusted fitness
-    fitness_ajusted_sum = sum([species_manager.get_species_adjusted_fitness_sum(specie_id) for specie_id in species_list])
+    fitness_ajusted_sum = sum([species_manager.get_species_adjusted_fitness_mean(specie_id) for specie_id in species_list])
 
     min_pop_size = reproduction_config.min_pop_size
     target_pop_size = reproduction_config.target_pop_size
@@ -172,7 +175,7 @@ def get_new_size_species(species_list, species_manager, reproduction_config):
     new_pop_total_size = 0
     if fitness_ajusted_sum > 0:
         for species_id in species_list:
-            species_ajfitness = species_manager.get_species_adjusted_fitness_sum(species_id)
+            species_ajfitness = species_manager.get_species_adjusted_fitness_mean(species_id)
 
             proportion = species_ajfitness/fitness_ajusted_sum
             pop_size = int(round(proportion * target_pop_size))
