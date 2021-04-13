@@ -1,5 +1,6 @@
 from bokeh.plotting import figure, show
-from mathplotlib import pyplot as plt
+from matplotlib import pyplot as plt
+import os
 
 class Event:
     def __init__(self,specie_id, gen, typeEvent = "add"):
@@ -20,7 +21,7 @@ class Event:
 
 
 class Logger:
-    def __init__(self):
+    def __init__(self,save = False):
         
         # List of best genome per gen
         self.best_genome = []
@@ -29,6 +30,7 @@ class Logger:
         
         self.species_gen = []
         self.all_species = dict()
+        self.save = save
         
     #on ajoute juste le meilleurs spécimen à la liste. Un meilleur specimen par génération
     def log_best(self, genome):
@@ -60,7 +62,15 @@ class Logger:
         if species_id not in self.species_gen[gen]:
             self.species_gen[gen].append()
 
-    def print_species_fitness():
+    def print_fitness(self):
+        fitness = [x.fitness for x in self.best_genome]
+        plt.figure()
+        plt.title("Evolution de la fitness")
+        plt.plot(range(len(fitness)), fitness)
+        print("fitness")
+        plt.show()
+
+    def print_species_fitness(self):
         #for gen in range(len(self.species_gen)):
         #    species = self.species_gen[gen]
         #    for species_id in species:
@@ -69,6 +79,13 @@ class Logger:
             X = range(specie.start_gen, specie.start_gen + len(self.genomes))
             Y = specie.fitness
             plt.plot(X,Y)
+
+        if self.save:
+            path = os.getcwd() + "/figures"
+            if os.path.isdir(path):
+                os.mkdir(path)
+                
+            plt.savefig(path+"")
         plt.show()
 
 
