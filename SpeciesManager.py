@@ -22,6 +22,9 @@ class SpeciesManager:
 
         # max fitness for all species per gen
         self.max_fitness = []
+        # current max genome fitness
+        self.current_max_genome = None
+
         # dict of species avg fitness (array for fitness per generation)
         self.species_avg_fitness = dict()
         # dict of representant
@@ -66,6 +69,14 @@ class SpeciesManager:
         else:
             raise Exception('Invalid species id for ajusted fitness sum')
 
+    def get_species_adjusted_fitness_mean(self, species_id):
+        if species_id in self.species_adjusted_fitness_sum:
+            return self.species_adjusted_fitness_sum[species_id][self.gen] / self.species_size[species_id][self.gen]
+        else:
+            raise Exception('Invalid species id for ajusted fitness sum')
+
+    def get_current_max_genome(self):
+        return self.current_max_genome
 
     def add_genome_to_specie(self, genome, specie_id):
         if not self.gen in self.species_size[specie_id]:
@@ -138,6 +149,7 @@ class SpeciesManager:
                 sum_fitness += genome.fitness
                 if genome.fitness > maximum_fitness:
                     maximum_fitness = genome.fitness
+                    self.current_max_genome = genome
             avg_fitness = sum_fitness/len(genomes)
 
             self.species_avg_fitness[specie_id][self.gen] = avg_fitness
@@ -153,24 +165,25 @@ class SpeciesManager:
 
         # return the 2 best species id in the last generations if the global
         # fitness has not improved
-        if len(self.max_fitness) > reproduction_config.global_max_gen_stagnant and \
-            self.max_fitness[-1] < self.max_fitness[-reproduction_config.global_max_gen_stagnant]:
-            first_max = 0
-            first_id = -1
-            second_max = 0
-            second_id = -1
-            for specie_id in self.species_max_fitness:
-                if self.gen in self.species_max_fitness[specie_id]:
-                    if self.species_max_fitness[specie_id][self.gen] > first_max:
-                        second_max = first_max
-                        second_id = first_id
-                        first_max = self.species_max_fitness[specie_id][self.gen]
-                        first_id = specie_id
-                    elif self.species_max_fitness[specie_id][self.gen] > second_max:
-                        second_max = self.species_max_fitness[specie_id][self.gen]
-                        second_id = specie_id
+        if len(self.species_id) > 2:
+            if len(self.max_fitness) > reproduction_config.global_max_gen_stagnant and \
+                self.max_fitness[-1] < self.max_fitness[-reproduction_config.global_max_gen_stagnant]:
+                first_max = 0
+                first_id = -1
+                second_max = 0
+                second_id = -1
+                for specie_id in self.species_max_fitness:
+                    if self.gen in self.species_max_fitness[specie_id]:
+                        if self.species_max_fitness[specie_id][self.gen] > first_max:
+                            second_max = first_max
+                            second_id = first_id
+                            first_max = self.species_max_fitness[specie_id][self.gen]
+                            first_id = specie_id
+                        elif self.species_max_fitness[specie_id][self.gen] > second_max:
+                            second_max = self.species_max_fitness[specie_id][self.gen]
+                            second_id = specie_id
 
-            return [first_id, second_id]
+                return [first_id, second_id]
 
 
         valid_specie = []
@@ -178,6 +191,8 @@ class SpeciesManager:
             if len(dictionnary) > reproduction_config.species_max_gen_stagnant:
                 max_fitness_per_gen = dictionnary[self.gen]
                 if max_fitness_per_gen > dictionnary[self.gen-reproduction_config.species_max_gen_stagnant]:
+                    valid_specie.append(specie)
+                elif max_fitness_per_gen >= self.max_fitness[-1]:
                     valid_specie.append(specie)
             else:
                 valid_specie.append(specie)

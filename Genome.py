@@ -17,9 +17,8 @@ class ConnectionGene:
     w_value: float
     disable: bool
 
-# https://stackoverflow.com/questions/3985619/how-to-calculate-a-logistic-sigmoid-function-in-python
+
 def neat_sigmoid(value):
-  "Numerically-stable sigmoid function."
   custom_mul = 4.9
   x= value * custom_mul
   if x >= 0:
@@ -28,6 +27,7 @@ def neat_sigmoid(value):
   else:
       z = math.exp(x)
       return z / (1 + z)
+
 
 
 #Genome main class. The actual Neural network and the genes were put in the same class.

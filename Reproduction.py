@@ -4,6 +4,7 @@ import numpy as np
 import copy
 import random
 from munch import Munch
+import math
 #default value were taken from the paper
 def create_cross_over_genome(parentA, parentB, mutation_tracker, newNodeProb = 0.03,
                             newConnectionProb = 1, disableGeneProb = 0.75, alterConnectionProb = 0.8, newConnectionValueProb = 0.1):
@@ -108,10 +109,10 @@ def create_new_genome(input_size, output_size):
 
   cpt = input_size+output_size
   connection_genes = dict()
-  for i in range(0, input_size):
-      for j in range(input_size, input_size+output_size):
-          connection_genes[i,j] = ConnectionGene(cpt, Mutation.get_new_weight(), False)
-          cpt+=1
+#   for i in range(0, input_size):
+#       for j in range(input_size, input_size+output_size):
+#           connection_genes[i,j] = ConnectionGene(cpt, Mutation.get_new_weight(), False)
+#           cpt+=1
 
   return Genome(input_size=input_size, output_size=output_size, nodes_genes=nodes_genes, connection_genes=connection_genes, generation= 0)
 
@@ -142,19 +143,28 @@ def get_basic_reproduction_config():
     reproduction_config.min_size_elite = 5
     reproduction_config.min_pop_size = 1
     reproduction_config.inter_species_prob = 0.001
-    reproduction_config.species_weighted_inter = True
+    reproduction_config.species_weighted_inter = False
     reproduction_config.disable_gen_prob = 0.75
     reproduction_config.asexual_prop = 0.25
+    reproduction_config.repro_cutoff = 0.20 #  peut etre rendre utile
 
     reproduction_config.species_max_gen_stagnant = 15
     reproduction_config.global_max_gen_stagnant = 20
+
+    # max ou average for species cross over chossing
+    # borne pour weights
+    # multiplicator for mutation
+    # checker pour affectation des weights
+    # allow cycle
+    # how many cycle are allowed
+
 
     return reproduction_config
 
 def get_new_size_species(species_list, species_manager, reproduction_config):
 
     #get the sum of ajusted fitness
-    fitness_ajusted_sum = sum([species_manager.get_species_adjusted_fitness_sum(specie_id) for specie_id in species_list])
+    fitness_ajusted_sum = sum([species_manager.get_species_adjusted_fitness_mean(specie_id) for specie_id in species_list])
 
     min_pop_size = reproduction_config.min_pop_size
     target_pop_size = reproduction_config.target_pop_size
@@ -164,7 +174,7 @@ def get_new_size_species(species_list, species_manager, reproduction_config):
     new_pop_total_size = 0
     if fitness_ajusted_sum > 0:
         for species_id in species_list:
-            species_ajfitness = species_manager.get_species_adjusted_fitness_sum(species_id)
+            species_ajfitness = species_manager.get_species_adjusted_fitness_mean(species_id)
 
             proportion = species_ajfitness/fitness_ajusted_sum
             pop_size = int(round(proportion * target_pop_size))
@@ -194,13 +204,14 @@ def get_valid_genomes_with_fitness(genomes, partner = None):
     for g in genomes:
         fitness.append(g.fitness)
         index.append(cmpt)
+        cmpt+=1
 
     if not partner is None:
         assert len(genomes) > 1
         index_to_remove = genomes.index(partner)
         del index[index_to_remove]
         del fitness[index_to_remove]
-    selected_index = random.choices(index, weights = fitness, k = 1)[0]
+    selected_index = random.choices(index, weights=fitness ,k = 1)[0]
 
     return genomes[selected_index]
 
@@ -216,6 +227,7 @@ def get_inter_species_partner(species_list, species_manager, current_specie, rep
         for id_specie in species_list:
             fitness.append(species_manager.get_species_avg_fitness(id_specie))
             index.append(cmpt)
+            cmpt+=1
         chosen_specie = random.choices(index, weights = fitness, k = 1)[0]
         if chosen_specie == index_to_remove:
             chosen_specie = (chosen_specie + 1) %  len(species_list)
@@ -223,9 +235,11 @@ def get_inter_species_partner(species_list, species_manager, current_specie, rep
         chosen_specie = random.randint(0, len(species_list) - 1)
         if chosen_specie == index_to_remove:
             chosen_specie = (chosen_specie + 1) %  len(species_list)
+
     chosen_specie = species_list[chosen_specie]
     
     genomes = species_manager.genomes_per_specie[chosen_specie]
+    genomes = list(sorted(genomes, key=lambda g: g.fitness))
     return get_valid_genomes_with_fitness(genomes)
 
 
@@ -247,7 +261,7 @@ def reproduce_new_gen(species_manager, mutation_tracker,  reproduction_config, l
         print('do something with logger for stagnant species') 
 
     if len(species_list) == 0: #will need to restart from scratch, can happen also if max score has been reached
-        raise Exception()
+        raise Exception('Extinction')
 
     new_size_species = get_new_size_species(species_list, species_manager, reproduction_config)
 
@@ -264,7 +278,13 @@ def reproduce_new_gen(species_manager, mutation_tracker,  reproduction_config, l
             #copy best genome unchanged
             new_genomes.append(copy.deepcopy(genomes[-1]))
             new_genomes[-1].generation += 1
-            current_size -=1      
+            current_size -=1
+        else:
+            best_fitnesss = species_manager.max_fitness[-1] #latest best fitness
+            if genomes[-1].fitness >= best_fitnesss:
+                new_genomes.append(copy.deepcopy(genomes[-1]))
+                new_genomes[-1].generation += 1
+                current_size -=1 
 
         #count how many reproduction in those left are of the type inter species
         if len(new_size_species) > 1:
