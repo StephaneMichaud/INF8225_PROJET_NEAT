@@ -79,6 +79,8 @@ class SpeciesManager:
         return self.current_max_genome
 
     def add_genome_to_specie(self, genome, specie_id):
+        genome.species_id = specie_id
+
         if not self.gen in self.species_size[specie_id]:
             self.species_size[specie_id][self.gen] = 0
         self.species_size[specie_id][self.gen] += 1

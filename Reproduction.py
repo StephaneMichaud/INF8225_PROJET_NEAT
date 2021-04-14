@@ -59,7 +59,7 @@ def create_cross_over_genome(parentA, parentB, mutation_tracker, newNodeProb = 0
             if np.random.uniform(0, 1) < alterConnectionProb:
                 new_c_genes[c_key] = alter_connection(new_c_genes[c_key], newConnectionValueProb)
 
-    child_genome = Genome(parentA.input_size, parentA.output_size, new_n_genes, new_c_genes, parentA.generation + 1)
+    child_genome = Genome(parentA.input_size, parentA.output_size, new_n_genes, new_c_genes, parentA.generation + 1, [parentA.species_id,parentB.species_id] )
 
     #apply new nodes mutation
     if np.random.uniform(0, 1) < newNodeProb:
@@ -88,7 +88,7 @@ def create_asexual_genome(parent, mutation_tracker, newNodeProb = 0.03, newConne
             if np.random.uniform(0, 1) < alterConnectionProb:
                 new_c_genes[c_key] = alter_connection(new_c_genes[c_key], newConnectionValueProb)
 
-    child_genome = Genome(parent.input_size, parent.output_size, new_n_genes, new_c_genes, parent.generation + 1)
+    child_genome = Genome(parent.input_size, parent.output_size, new_n_genes, new_c_genes, parent.generation + 1,[parent.species_id])
 
     #apply new nodes mutation
     if np.random.uniform(0, 1) < newNodeProb:
@@ -114,7 +114,7 @@ def create_new_genome(input_size, output_size):
 #           connection_genes[i,j] = ConnectionGene(cpt, Mutation.get_new_weight(), False)
 #           cpt+=1
 
-  return Genome(input_size=input_size, output_size=output_size, nodes_genes=nodes_genes, connection_genes=connection_genes, generation= 0)
+  return Genome(input_size=input_size, output_size=output_size, nodes_genes=nodes_genes, connection_genes=connection_genes, generation= 0,parents_species_id = [])
 
 def create_initial_population(input_size, output_size, pop_size):
 
@@ -307,6 +307,7 @@ def reproduce_new_gen(species_manager, mutation_tracker,  reproduction_config, l
                                                     disableGeneProb=reproduction_config.disable_gen_prob,
                                                     alterConnectionProb = reproduction_config.alterConnectionProb, 
                                                     newConnectionValueProb = reproduction_config.newConnectionValueProb)
+                child.parent_species_id = []
                 new_genomes.append(child)
                 current_size-=1
 

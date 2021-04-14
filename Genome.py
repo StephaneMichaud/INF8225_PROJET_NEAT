@@ -32,7 +32,7 @@ def neat_sigmoid(value):
 
 #Genome main class. The actual Neural network and the genes were put in the same class.
 class Genome:
-  def __init__(self, input_size, output_size, nodes_genes, connection_genes, generation):
+  def __init__(self, input_size, output_size, nodes_genes, connection_genes, generation, parents_species_id = []):
     #we dont make a deep copy here so whe npassing genes to the construcotr, be sure that they are either a copy or are not used by any other genome
     self.c_genes = connection_genes
     self.n_genes = nodes_genes
@@ -45,7 +45,10 @@ class Genome:
     self.generation = generation
     self.fitness = None
     self.ajfitness = None
+    self.species_id = -1
+    self.parents_species_id = parents_species_id
   
+
   def get_nb_genes(self):
     return len(self.c_genes)
 
