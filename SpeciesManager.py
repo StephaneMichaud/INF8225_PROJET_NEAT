@@ -1,9 +1,10 @@
-from itertools import accumulate
 import operator
+from itertools import accumulate
 from statistics import mean
 
+
 class SpeciesManager:
-    def __init__(self, threshold = 3, c1 = 0.5, c2 = 0.2, c3 = 0.4):
+    def __init__(self, threshold=3, c1=0.5, c2=0.2, c3=0.4):
         self.threshold = threshold
         self.c1 = c1
         self.c2 = c2
@@ -18,7 +19,7 @@ class SpeciesManager:
         # dict of species max fitness (array for fitness per generation)
         self.species_max_fitness = dict()
         # dict of genome which maximise fitness
-        self.species_max_genome = dict() 
+        self.species_max_genome = dict()
 
         # max fitness for all species per gen
         self.max_fitness = []
@@ -35,9 +36,8 @@ class SpeciesManager:
         # gen number
         self.gen = -1
 
-
         self.current_specie_id = -1
-        #function get valid species id (has pop > 0 and max fitness augment last 5 gen)
+        # function get valid species id (has pop > 0 and max fitness augment last 5 gen)
 
     def get_species_size(self, species_id):
         if species_id in self.species_size:
@@ -91,13 +91,12 @@ class SpeciesManager:
         elif self.species_max_fitness[specie_id][self.gen] < genome.fitness:
             self.species_max_fitness[specie_id][self.gen] = genome.fitness
             self.species_max_genome[specie_id][self.gen] = genome
-        
+
         if not specie_id in self.genomes_per_specie:
             self.genomes_per_specie[specie_id] = [genome]
         else:
             self.genomes_per_specie[specie_id].append(genome)
         return
-
 
     def create_new_specie(self, representant):
         self.current_specie_id += 1
@@ -111,10 +110,9 @@ class SpeciesManager:
         self.species_max_fitness[self.current_specie_id][self.gen] = representant.fitness
         self.species_max_genome[self.current_specie_id] = dict()
         self.species_max_genome[self.current_specie_id][self.gen] = representant
-        self.genomes_per_specie[self.current_specie_id] = [ representant ]
+        self.genomes_per_specie[self.current_specie_id] = [representant]
 
         return self.current_specie_id
-
 
     def make_new_species(self, orphan_genomes):
         belongs_to_specie = [False]*len(orphan_genomes)
@@ -129,18 +127,17 @@ class SpeciesManager:
                     if not belongs_to_specie[sibling_id] and self.are_same_species(sibling, genome):
                         self.add_genome_to_specie(sibling, new_specie_id)
                         belongs_to_specie[sibling_id] = True
-                         
+
         return
 
-
-    
     def calculate_adjusted_fitness(self):
         for specie_id, genomes in self.genomes_per_specie.items():
             for genome in genomes:
                 genome.ajfitness = genome.fitness/float(len(genomes))
 
-            self.species_adjusted_fitness_sum[specie_id][self.gen] = sum([g.ajfitness for g in genomes])
-            
+            self.species_adjusted_fitness_sum[specie_id][self.gen] = sum(
+                [g.ajfitness for g in genomes])
+
         return
 
     def calculate_average_and_gen_max_fitness(self):
@@ -169,7 +166,7 @@ class SpeciesManager:
         # fitness has not improved
         if len(self.species_id) > 2:
             if len(self.max_fitness) > reproduction_config.global_max_gen_stagnant and \
-                self.max_fitness[-1] < self.max_fitness[-reproduction_config.global_max_gen_stagnant]:
+                    self.max_fitness[-1] < self.max_fitness[-reproduction_config.global_max_gen_stagnant]:
                 first_max = 0
                 first_id = -1
                 second_max = 0
@@ -187,7 +184,6 @@ class SpeciesManager:
 
                 return [first_id, second_id]
 
-
         valid_specie = []
         for specie, dictionnary in self.species_max_fitness.items():
             if len(dictionnary) > reproduction_config.species_max_gen_stagnant:
@@ -198,8 +194,7 @@ class SpeciesManager:
                     valid_specie.append(specie)
             else:
                 valid_specie.append(specie)
-                
-        
+
         return valid_specie
 
     def kill_empty_species(self):
@@ -207,7 +202,6 @@ class SpeciesManager:
         for specie_id in self.species_id:
             if not specie_id in self.genomes_per_specie:
                 empty_species_id.append(specie_id)
-
 
         for specie_id in empty_species_id:
             self.species_id.remove(specie_id)
@@ -218,9 +212,8 @@ class SpeciesManager:
             self.species_avg_fitness.pop(specie_id)
             self.species_representant.pop(specie_id)
 
-
     def initialize_species(self, population):
-        self.gen +=1
+        self.gen += 1
         self.genomes_per_specie = dict()
 
         # Genomes that can't be members of any species
@@ -248,7 +241,6 @@ class SpeciesManager:
 
         return
 
-
     def compatibility_distance2(self, genome_a, genome_b):
         shared_genes = []
         genes_a = [c for c in genome_a.c_genes.items()]
@@ -262,23 +254,23 @@ class SpeciesManager:
         for n in genes_a:
             if n[0] not in genome_b.c_genes:
                 if n[1].innov_n > max_innov_b:
-                    E+=1
+                    E += 1
                 else:
-                    D+=1
+                    D += 1
             else:
-                shared_genes.append(abs(genome_a.c_genes[n[0]].w_value - genome_b.c_genes[n[0]].w_value))
+                shared_genes.append(
+                    abs(genome_a.c_genes[n[0]].w_value - genome_b.c_genes[n[0]].w_value))
 
         for n in genes_b:
             if n[0] not in genome_a.c_genes:
                 if n[1].innov_n > max_innov_a:
-                    E+=1
+                    E += 1
                 else:
-                    D+=1
+                    D += 1
         N = max(genome_a.get_nb_genes(), genome_b.get_nb_genes())
         N = N if N >= 20 else 1.0
         W = mean(shared_genes) if len(shared_genes) > 0 else 0
         return self.c1*E/N + self.c2*D/N + self.c3*W
-
 
     def compatibility_distance(self, genome_a, genome_b):
         if genome_a.get_nb_genes() + genome_b.get_nb_genes() == 0:
@@ -288,8 +280,10 @@ class SpeciesManager:
         if genome_b.get_nb_genes() == 0:
             return self.threshold + 1
 
-        genes_a = sorted(list(genome_a.c_genes.values()), key=lambda g: g.innov_n)
-        genes_b = sorted(list(genome_b.c_genes.values()), key=lambda g: g.innov_n)
+        genes_a = sorted(list(genome_a.c_genes.values()),
+                         key=lambda g: g.innov_n)
+        genes_b = sorted(list(genome_b.c_genes.values()),
+                         key=lambda g: g.innov_n)
 
         index_matching_genes = -1
         for index, genes in enumerate(zip(genes_a, genes_b)):
@@ -302,52 +296,54 @@ class SpeciesManager:
             innov_b = set(g.innov_n for g in genes_b[index_matching_genes+1:])
             matched_genes_at_end = []
             unmatched_genes_a = []
-            
+
             for g in genes_a[index_matching_genes+1:]:
                 if g.innov_n in innov_b:
                     matched_genes_at_end.append(g)
                 else:
                     unmatched_genes_a.append(g)
 
-
             innov_a = set(g.innov_n for g in genes_a[index_matching_genes+1:])
             unmatched_genes_b = []
             for g in genes_b[index_matching_genes+1:]:
                 if g.innov_n not in innov_a:
                     unmatched_genes_b.append(g)
-                    
+
             if index_matching_genes == 0:
-                matching_genes_a = sorted([genes_a[index_matching_genes]] + matched_genes_at_end, key=lambda g: g.innov_n)
-                matching_genes_b = sorted([genes_b[index_matching_genes]] + matched_genes_at_end, key=lambda g: g.innov_n)
+                matching_genes_a = sorted(
+                    [genes_a[index_matching_genes]] + matched_genes_at_end, key=lambda g: g.innov_n)
+                matching_genes_b = sorted(
+                    [genes_b[index_matching_genes]] + matched_genes_at_end, key=lambda g: g.innov_n)
             else:
-                matching_genes_a = sorted(genes_a[:index_matching_genes] + matched_genes_at_end, key=lambda g: g.innov_n)
-                matching_genes_b = sorted(genes_b[:index_matching_genes] + matched_genes_at_end, key=lambda g: g.innov_n)
+                matching_genes_a = sorted(
+                    genes_a[:index_matching_genes] + matched_genes_at_end, key=lambda g: g.innov_n)
+                matching_genes_b = sorted(
+                    genes_b[:index_matching_genes] + matched_genes_at_end, key=lambda g: g.innov_n)
         else:
             matching_genes_a = []
             matching_genes_b = []
             unmatched_genes_a = genes_a
             unmatched_genes_b = genes_b
 
-
         unmatched_genes_a = sorted(unmatched_genes_a, key=lambda g: g.innov_n)
         unmatched_genes_b = sorted(unmatched_genes_b, key=lambda g: g.innov_n)
 
-        
-        max_innov_a = 0 if len(unmatched_genes_a) == 0 else unmatched_genes_a[-1].innov_n
-        max_innov_b = 0 if len(unmatched_genes_b) == 0 else unmatched_genes_b[-1].innov_n
+        max_innov_a = 0 if len(
+            unmatched_genes_a) == 0 else unmatched_genes_a[-1].innov_n
+        max_innov_b = 0 if len(
+            unmatched_genes_b) == 0 else unmatched_genes_b[-1].innov_n
 
         innov_threshold = max_innov_a if max_innov_a < max_innov_b else max_innov_b
 
-        E = len(list(filter(lambda g: g.innov_n > innov_threshold, unmatched_genes_a))) + len(list(filter(lambda g: g.innov_n > innov_threshold, unmatched_genes_b)))
+        E = len(list(filter(lambda g: g.innov_n > innov_threshold, unmatched_genes_a))) + \
+            len(list(filter(lambda g: g.innov_n > innov_threshold, unmatched_genes_b)))
         D = len(unmatched_genes_b) + len(unmatched_genes_a) - E
-        W = 0 if index_matching_genes == -1 else mean(abs(gene_a.w_value-gene_b.w_value) for gene_a, gene_b in zip(matching_genes_a, matching_genes_b))
+        W = 0 if index_matching_genes == - \
+            1 else mean(abs(gene_a.w_value-gene_b.w_value) for gene_a, gene_b in zip(matching_genes_a, matching_genes_b))
         N = max(genome_a.get_nb_genes(), genome_b.get_nb_genes())
         N = N if N >= 20 else 1.0
 
-
         return self.c1*E/N + self.c2*D/N + self.c3*W
-    
-
 
     def are_same_species(self, genome_a, genome_b):
-        return self.compatibility_distance2(genome_a, genome_b)  < self.threshold
+        return self.compatibility_distance2(genome_a, genome_b) < self.threshold

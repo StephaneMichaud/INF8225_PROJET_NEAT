@@ -13,4 +13,3 @@ if __name__ == "__main__":
     # print(test.fitness)
     logger.print_species_fitness()
     logger.print_fitness()
-
