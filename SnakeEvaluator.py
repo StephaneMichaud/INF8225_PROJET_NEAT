@@ -17,7 +17,8 @@ class SnakeEvaluator:
         
         self.CONTROL_RANGES = [i/(float(self.NB_ACTIONS)-1) for i in range(0, self.NB_ACTIONS+1)]
 
-
+    def get_nb_inputs_nn(self):
+        return self.game_controller.grid.grid_size[0]*self.game_controller.grid.grid_size[1] + 1
 
     def convert_nn_output_to_action(self, nn_output):
         nn_output = nn_output[0]
@@ -95,7 +96,7 @@ class SnakeEvaluator:
 
                 total_time_steps+=1
             
-            
+
                 
 
             
