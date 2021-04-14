@@ -1,5 +1,6 @@
 import gym
 import gym_snake
+import numpy as np
 from functools import reduce
 
 # https://github.com/grantsrb/Gym-Snake
@@ -19,20 +20,21 @@ class SnakeEvaluator:
         self.SPACE_COLOR = self.game_controller.grid.SPACE_COLOR
         self.ACTIONS = [self.snake.UP, self.snake.RIGHT, self.snake.DOWN, self.snake.LEFT]
         self.NB_ACTIONS = len(self.ACTIONS)
-        
-        self.CONTROL_RANGES = [i/(float(self.NB_ACTIONS)-1) for i in range(0, self.NB_ACTIONS+1)]
+
 
 
     def get_nb_inputs_nn(self):
         return self.game_controller.grid.grid_size[0]*self.game_controller.grid.grid_size[1] + 1
+    
+
+
+    def get_nb_outputs_nn(self):
+        return self.NB_ACTIONS
+
+
 
     def convert_nn_output_to_action(self, nn_output):
-        nn_output = nn_output[0]
-        for i in range(0, self.NB_ACTIONS):
-            if nn_output >= self.CONTROL_RANGES[i] and nn_output < self.CONTROL_RANGES[i+1]:
-                return self.ACTIONS[i]
-
-        raise Exception()
+        return self.ACTIONS[np.argmax(nn_output)]
 
 
 
