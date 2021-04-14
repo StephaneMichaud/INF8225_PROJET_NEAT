@@ -1,9 +1,6 @@
 from bokeh.plotting import figure, show
 from matplotlib import pyplot as plt
-<<<<<<< HEAD
 import os
-=======
->>>>>>> main
 
 class Event:
     def __init__(self,specie_id, gen, typeEvent = "add"):
