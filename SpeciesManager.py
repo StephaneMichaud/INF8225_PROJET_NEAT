@@ -1,6 +1,7 @@
 import operator
 from itertools import accumulate
 from statistics import mean
+import math
 
 
 class SpeciesManager:
@@ -141,7 +142,7 @@ class SpeciesManager:
         return
 
     def calculate_average_and_gen_max_fitness(self):
-        maximum_fitness = 0
+        maximum_fitness = -math.inf
         for specie_id, genomes in self.genomes_per_specie.items():
             sum_fitness = 0.0
             for genome in genomes:

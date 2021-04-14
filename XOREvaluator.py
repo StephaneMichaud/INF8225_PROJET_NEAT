@@ -6,11 +6,11 @@ class XOREvaluator:
         '''Evaluates the current population'''
 
         for genome in current_population:
-            fitness = 4.0
+            fitness = 1.0
             for a in range(len(self.xor)):
                 for b in range(len(self.xor[a])):
                     prediction = genome.feed_forward(
                         [1, a, b])  # the 1 is the bias node
-                    fitness -= abs(prediction[0]-self.xor[a][b])
+                    fitness -= abs(prediction[0]-self.xor[a][b])** 2
 
-            genome.fitness = fitness ** 2
+            genome.fitness = fitness

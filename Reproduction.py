@@ -224,9 +224,9 @@ def get_valid_genomes_with_fitness(genomes, partner=None):
     cmpt = 0
     max_fitness= genomes[-1].fitness
     min_fitness = genomes[0].fitness
-    fitness_diviser = max_fitness - min_fitness if max_fitness > min_fitness else 1
+    fitness_diviser = max(max_fitness - min_fitness if max_fitness > min_fitness else 1, 1)
     for g in genomes:
-        fitness.append(g.fitness/fitness_diviser)
+        fitness.append((g.fitness + 0.00001 - min_fitness)/fitness_diviser)
         index.append(cmpt)
         cmpt += 1
 
@@ -259,9 +259,9 @@ def get_inter_species_partner(species_list, species_manager, current_specie, rep
             cmpt += 1
         max_fitness = max(fitness)
         min_fitness = min(fitness)
-        fitness_diviser = max_fitness - min_fitness if max_fitness > min_fitness else 1
+        fitness_diviser = max(max_fitness - min_fitness if max_fitness > min_fitness else 1, 1)
         for i in range(0, len(fitness)):
-            fitness[i] = fitness[i]/fitness_diviser
+            fitness[i] = (fitness[i] - min_fitness + 0.00001)/fitness_diviser
         chosen_specie = random.choices(index, weights=fitness, k=1)[0]
         if chosen_specie == index_to_remove:
             chosen_specie = (chosen_specie + 1) % len(species_list)
