@@ -1,5 +1,5 @@
 from functools import reduce
-from itertools import combinations
+from itertools import product
 
 import gym
 import gym_snake
@@ -12,9 +12,21 @@ import numpy as np
 class SnakeEvaluator:
     def __init__(self):
         self.env = gym.make('snake-v0')
-        self.INCREMENT_COMBINATIONS = list(combinations([0,-1,1],2))
+        self.INCREMENT_COMBINATIONS = list(product([0,-1,1],[0,-1,1]))
         self.INCREMENT_COMBINATIONS.pop(0)
         self.initialize_attributes()
+
+    def get_unit_type(self,color):
+        if self.equal_colors(color,self.BODY_COLOR):
+            return 0
+        if self.equal_colors(color,self.HEAD_COLOR):
+            return 2
+        if self.equal_colors(color,self.FOOD_COLOR):
+            return 1
+        if self.equal_colors(color,self.SPACE_COLOR):
+            return 3
+        
+        return 3
 
     def initialize_attributes(self):
         self.env.reset()  # Constructs an instance of the game
@@ -26,14 +38,13 @@ class SnakeEvaluator:
         self.SPACE_COLOR = self.game_controller.grid.SPACE_COLOR
         self.GRID_SIZE_X = self.game_controller.grid.grid_size[0]
         self.GRID_SIZE_Y = self.game_controller.grid.grid_size[1]
-        self.UNIT_TYPES = {self.BODY_COLOR: 0, self.HEAD_COLOR: 2, self.FOOD_COLOR: 1, self.SPACE_COLOR: 3}
         self.ACTIONS = [self.snake.UP, self.snake.RIGHT,
                         self.snake.DOWN, self.snake.LEFT]
         self.NB_ACTIONS = len(self.ACTIONS)
 
 
     def get_nb_inputs_nn(self):
-        return self.GRID_SIZE_X*self.GRID_SIZE_Y + 1
+        return 3*8+1
 
 
 
@@ -48,8 +59,8 @@ class SnakeEvaluator:
     def equal_colors(self, color_a, color_b):
         return reduce(lambda x, y: x and y, map(lambda p, q: p == q, color_a, color_b), True)
 
-    def get_unit_type(self, grid_object, offset_x, offset_y):
-        return grid_object.grid[offset_x+self.env.unit_size/2, offset_y+self.env.unit_size/2]
+    def get_unit_color(self, grid_object, offset_x, offset_y):
+        return grid_object.grid[int(offset_x)+int(self.env.unit_size/2)][int(offset_y)+int(self.env.unit_size/2)]
         # for x in range(0, self.env.unit_size):
         #     for y in range(0, self.env.unit_size):
         #         current_pixel_color = grid_object.grid[x+offset_x, y+offset_y]
@@ -97,12 +108,12 @@ class SnakeEvaluator:
             
             in_bounds = position[0] >= 0 and position[1] >= 0 and position[0] < self.GRID_SIZE_X and position[1] <= self.GRID_SIZE_Y
             if in_bounds:
-                unit_type = self.get_unit_type(grid_object, position[0], position[1])
-                if self.SPACE_COLOR == unit_type:
+                unit_color = self.get_unit_color(grid_object, position[0], position[1])
+                if self.equal_colors(self.SPACE_COLOR,unit_color):
                     continue
                 else:
                     output = [0, 0, 0]
-                    output[self.UNIT_TYPES[unit_type]] = (abs(increment_x)+abs(increment_y))*cpt\
+                    output[self.get_unit_type(unit_color)] = (abs(increment_x)+abs(increment_y))*cpt\
                         /float(self.GRID_SIZE_X*abs(increment_x)+self.GRID_SIZE_Y*abs(increment_y))
 
                             
@@ -119,13 +130,12 @@ class SnakeEvaluator:
 
         for increment in self.INCREMENT_COMBINATIONS:
             increment_x, increment_y = increment
-            nn_input.append(self.detector(grid_object,snake_head_position,increment_x,increment_y))
+            nn_input += self.detector(grid_object,snake_head_position,increment_x,increment_y)
 
         # for x in range(0, grid_object.grid_size[0]):
         #     for y in range(0, grid_object.grid_size[1]):
         #         nn_input.append(self.get_unit_type(
         #             grid_object, x*self.env.unit_size, y*self.env.unit_size))
-
         return nn_input
 
     def get_snake_default_fitness(self):

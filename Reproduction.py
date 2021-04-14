@@ -125,7 +125,10 @@ def create_new_genome(input_size, output_size, fully_connected=False):
             for j in range(input_size, input_size+output_size):
                 connection_genes[i, j] = ConnectionGene(
                     cpt, Mutation.get_new_weight(), False)
+                nodes_genes[i].output_nodes.append(j)
+                nodes_genes[j].input_nodes.append(i)
                 cpt += 1
+
 
     return Genome(input_size=input_size, output_size=output_size, nodes_genes=nodes_genes, connection_genes=connection_genes, generation=0, parents_species_id=[])
 
