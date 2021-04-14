@@ -3,7 +3,7 @@ import operator
 from statistics import mean
 
 class SpeciesManager:
-    def __init__(self, threshold = 3, c1 = 1.0, c2 = 1.0, c3 = 0.4):
+    def __init__(self, threshold = 3, c1 = 0.5, c2 = 0.2, c3 = 0.4):
         self.threshold = threshold
         self.c1 = c1
         self.c2 = c2

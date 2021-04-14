@@ -135,23 +135,24 @@ def get_basic_reproduction_config():
     "   newNodeProb, newConnectionProb, alterConnectionProb, newConnectionValueProb"
     "   min_size_elite, inter_species_prob, species_weighted_inter, min_pop_size, target_pop_size"
     reproduction_config = Munch()
-    reproduction_config.newNodeProb = 0.03
-    reproduction_config.newConnectionProb = 0.05
-    reproduction_config.alterConnectionProb = 0.8
-    reproduction_config.newConnectionValueProb = 0.1
+    reproduction_config.newNodeProb = 0.03 #0.03
+    reproduction_config.newConnectionProb = 0.2 #0.05
+    reproduction_config.alterConnectionProb = 0.9 #0.80
+    reproduction_config.newConnectionValueProb = 0.1 #0.1
 
-    reproduction_config.min_size_elite = 5
-    reproduction_config.min_pop_size = 1
-    reproduction_config.inter_species_prob = 0.001
-    reproduction_config.species_weighted_inter = False
-    reproduction_config.disable_gen_prob = 0.75
-    reproduction_config.asexual_prop = 0.25
+    reproduction_config.min_size_elite = 8 #5
+    reproduction_config.min_pop_size = 3 #1
+    reproduction_config.inter_species_prob = 0.001 #0.001
+    reproduction_config.species_weighted_inter = True
+    reproduction_config.disable_gen_prob = 0.75 #0.75
+    reproduction_config.asexual_prop = 0.25 #0.25
     reproduction_config.repro_cutoff = 0.20 #  peut etre rendre utile
 
-    reproduction_config.species_max_gen_stagnant = 15
-    reproduction_config.global_max_gen_stagnant = 20
-
+    reproduction_config.species_max_gen_stagnant = 30 #15
+    reproduction_config.global_max_gen_stagnant = 20 #20
+    
     # max ou average for species cross over chossing
+    reproduction_config.crossing_with_avg = True
     # borne pour weights
     # multiplicator for mutation
     # checker pour affectation des weights
@@ -225,7 +226,10 @@ def get_inter_species_partner(species_list, species_manager, current_specie, rep
     chosen_specie = -1
     if reproduction_config.species_weighted_inter == True:
         for id_specie in species_list:
-            fitness.append(species_manager.get_species_avg_fitness(id_specie))
+            if reproduction_config.crossing_with_avg == True:
+                fitness.append(species_manager.get_species_avg_fitness(id_specie))
+            else:
+                fitness.append(species_manager.species_max_fitness(id_specie))
             index.append(cmpt)
             cmpt+=1
         chosen_specie = random.choices(index, weights = fitness, k = 1)[0]
