@@ -1,30 +1,11 @@
 from bokeh.plotting import figure, show
 from matplotlib import pyplot as plt
-<<<<<<< HEAD
 import os
-=======
->>>>>>> main
-
-class Event:
-    def __init__(self,specie_id, gen, typeEvent = "add"):
-        if not (typeEvent == "add" or typeEvent == "remove") :
-            raise Exception("Incorrect type of event")
-        self.type = typeEvent
-        self.specie_id = specie_id
-        self.gen = gen
-    
-    def is_event_applicable(gen):
-        return self.gen == gen
-    
-    def apply_event(L):
-        if self.type == "add":
-            L.append(self.specie_id)
-        elif self.type == "remove":
-            L.remove(self.specie_id)
-
+import pickle
+from datetime import datetime
 
 class Logger:
-    def __init__(self,save = False):
+    def __init__(self):
         
         # List of best genome per gen
         self.best_genome = []
@@ -33,7 +14,7 @@ class Logger:
         
         self.species_gen = []
         self.all_species = dict()
-        self.save = save
+        self.path = "TestResults/" + datetime.now().strftime("%d/%m/%Y %H:%M")
         
     #on ajoute juste le meilleurs spécimen à la liste. Un meilleur specimen par génération
     def log_best(self, genome):
@@ -65,14 +46,17 @@ class Logger:
         if species_id not in self.species_gen[gen]:
             self.species_gen[gen].append(species_id)
 
-    def print_fitness(self):
+    def print_fitness(self, save = False):
         fitness = [x.fitness for x in self.best_genome]
         plt.figure()
         plt.title("Evolution de la fitness")
         plt.plot(range(len(fitness)), fitness)
         plt.show()
+        if (save):
+            self.make_dir()
+            plt.savefig('max_fitness_per_gen.png', dpi=200) 
 
-    def print_species_fitness(self):
+    def print_species_fitness(self, save = False):
         #for gen in range(len(self.species_gen)):
         #    species = self.species_gen[gen]
         #    for species_id in species:
@@ -82,17 +66,29 @@ class Logger:
             X = range(specie.start_gen, specie.start_gen + len(specie.genomes))
             Y = specie.fitness
             plt.plot(X,Y)
-
-        if self.save:
-            path = os.getcwd() + "/figures"
-            if os.path.isdir(path):
-                os.mkdir(path)
-                
-            plt.savefig(path+"")
         plt.show()
-
-
         
+        if (save):
+            self.make_dir()
+            plt.savefig('max_fitness_per_speciec_per_gen.png', dpi=200) 
+
+    def save(self, path):
+        self.make_dir()
+        genome = self.best_genome[-1]
+        with open(path,'wb') as file:
+            pickle.dump(genome, file)
+
+    def recover(self, path):
+        with open(path,'rb') as file:
+            genome = pickle.load(file)
+
+        return genome
+
+    def make_dir(self):
+            path = os.getcwd() + self.path
+            if not os.path.isdir(path):
+                os.mkdir(path)
+
 class Species:
     def __init__(self, species_id, gen):
         self.species_id = species_id
