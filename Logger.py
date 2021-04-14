@@ -33,11 +33,11 @@ class Logger:
         if species_id in self.all_species:
             specie = self.all_species[species_id]
             specie.genomes.append(genome)
-            specie.size.append(genome)
+            specie.size.append(genome.get_nb_genes())
         else:
             specie = Species(species_id, gen)
             specie.genomes.append(genome)
-            specie.size.append(genome)
+            specie.size.append(genome.get_nb_genes())
             self.all_species[species_id] = specie
         
         specie.fitness.append(genome.fitness)
