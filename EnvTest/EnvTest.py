@@ -30,7 +30,6 @@ if __name__ == '__main__':
     # will be namespaced). You can also dump to a tempdir if you'd
     # like: tempfile.mkdtemp().
     outdir = '/tmp/random-agent-results'
-    env = wrappers.Monitor(env, directory=outdir, force=True)
     env.seed(0)
     agent = RandomAgent(env.action_space)
 
@@ -41,11 +40,13 @@ if __name__ == '__main__':
     for i in range(episode_count):
         ob = env.reset()
         while True:
-            action = agent.act(ob, reward, done) # genome.feed_forward(ob)
+            action = agent.act(ob, reward, done) # genome.feed_forward(ob)^
+            print(action)
             ob, reward, done, info = env.step(action)
             if done:
                 print(agent.reward)
                 break
+            env.render()
         agent.reward = 0
             # Note there's no env.render() here. But the environment still can open window and
             # render if asked by env.monitor: it calls env.render('rgb_array') to record video.

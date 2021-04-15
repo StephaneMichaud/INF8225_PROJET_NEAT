@@ -10,7 +10,8 @@ from Genome import ConnectionGene, Genome, NodeGene
 from Mutation import (add_connection_mutation, add_node_mutation,
                       alter_connection)
 
-
+class ExtinctionException(Exception):
+    pass
 # default value were taken from the paper
 def create_cross_over_genome(parentA, parentB, mutation_tracker, newNodeProb=0.03,
                              newConnectionProb=1, disableGeneProb=0.75, alterConnectionProb=0.8, newConnectionValueProb=0.1):
@@ -157,8 +158,8 @@ def get_basic_reproduction_config():
     reproduction_config.alterConnectionProb = 0.9  # 0.80
     reproduction_config.newConnectionValueProb = 0.1  # 0.1
 
-    reproduction_config.min_size_elite = 8  # 5
-    reproduction_config.min_pop_size = 3  # 1
+    reproduction_config.min_size_elite = 5  # 5
+    reproduction_config.min_pop_size = 1  # 1
     reproduction_config.inter_species_prob = 0.001  # 0.001
     reproduction_config.species_weighted_inter = True
     reproduction_config.disable_gen_prob = 0.75  # 0.75
@@ -293,7 +294,7 @@ def reproduce_new_gen(species_manager, mutation_tracker,  reproduction_config, l
         print('do something with logger for stagnant species')
 
     if len(species_list) == 0:  # will need to restart from scratch, can happen also if max score has been reached
-        raise Exception('Extinction')
+        raise ExtinctionException('Extinction')
 
     new_size_species = get_new_size_species(
         species_list, species_manager, reproduction_config)

@@ -5,6 +5,12 @@ class MultiThreadedEvaluatorDecorator:
         self.n_workers = n_workers
         self.evaluator = evaluator
 
+    def get_nb_inputs_nn(self):
+        return self.evaluator.get_nb_inputs_nn()
+
+    def get_nb_outputs_nn(self):
+        return self.evaluator.get_nb_outputs_nn()
+
     def evaluate_genomes(self, current_population):
         '''Evaluates the current population'''
         n_genomes = len(current_population)
