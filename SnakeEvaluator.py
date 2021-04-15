@@ -26,7 +26,12 @@ class SnakeEvaluator:
         if self.equal_colors(color,self.SPACE_COLOR):
             return 3
         
-        return 3
+        # print(self.HEAD_COLOR)
+        # print(self.BODY_COLOR)
+        # print(self.FOOD_COLOR)
+        # print(self.SPACE_COLOR)
+        # print(color)
+        return 2
 
     def initialize_attributes(self):
         self.env.reset()  # Constructs an instance of the game
@@ -159,10 +164,13 @@ class SnakeEvaluator:
                 action = self.convert_nn_output_to_action(nn_output)
 
                 state = self.env.step(action)
-                self.env.render()
+                #self.env.render()
                 reward = state[1]  # index for reward
 
                 self.adjust_fitness(genome, reward, total_time_steps)
 
                 is_snake_alive = state[3]['snakes_remaining'] == 1
                 total_time_steps += 1
+
+                if genome.fitness < 0:
+                    break
