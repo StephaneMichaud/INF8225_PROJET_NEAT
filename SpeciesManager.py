@@ -5,7 +5,7 @@ import math
 
 
 class SpeciesManager:
-    def __init__(self, threshold=3, c1=0.5, c2=0.2, c3=0.4):
+    def __init__(self, threshold=3, c1=1, c2=1, c3=0.5):
         self.threshold = threshold
         self.c1 = c1
         self.c2 = c2
@@ -101,6 +101,7 @@ class SpeciesManager:
 
     def create_new_specie(self, representant):
         self.current_specie_id += 1
+        representant.species_id = self.current_specie_id
         self.species_id.append(self.current_specie_id)
         self.species_adjusted_fitness_sum[self.current_specie_id] = dict()
         self.species_avg_fitness[self.current_specie_id] = dict()
