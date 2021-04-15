@@ -1,8 +1,8 @@
 from NeatPipeline import neat_pipeline
-from XOREvaluator import XOREvaluator
+from Evaluators.XOREvaluator import XOREvaluator
 from Logger import Logger
 from GenomeUtils import create_test_xor
-from MultiThreadedEvaluatorDecorator import MultiThreadedEvaluatorDecorator
+from Evaluators.MultiThreadedEvaluatorDecorator import MultiThreadedEvaluatorDecorator
 
 if __name__ == "__main__":
     evaluator = MultiThreadedEvaluatorDecorator(evaluator = XOREvaluator(), n_workers=4)

@@ -11,8 +11,6 @@ class SnakeEvaluator:
         self.env = gym.make('snake-v0')
         self.initialize_attributes()
 
-<<<<<<< HEAD
-=======
     def get_unit_type(self,color):
         if self.equal_colors(color,self.BODY_COLOR):
             return 0
@@ -22,15 +20,8 @@ class SnakeEvaluator:
             return 1
         if self.equal_colors(color,self.SPACE_COLOR):
             return 3
-        
-        # print(self.HEAD_COLOR)
-        # print(self.BODY_COLOR)
-        # print(self.FOOD_COLOR)
-        # print(self.SPACE_COLOR)
-        # print(color)
         return 2
 
->>>>>>> da1954e8b9fea7c522b628a9f984eda2314bd927
     def initialize_attributes(self):
         self.env.reset()  # Constructs an instance of the game
         self.game_controller = self.env.controller

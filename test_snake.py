@@ -1,7 +1,7 @@
 from NeatPipeline import neat_pipeline
 from Logger import Logger
 from GenomeUtils import create_test_xor
-from SnakeEvaluator import SnakeEvaluator
+from Evaluators.SnakeEvaluator import SnakeEvaluator
 from math import inf
 
 if __name__ == "__main__":
