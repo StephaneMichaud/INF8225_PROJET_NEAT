@@ -2,11 +2,12 @@ from NeatPipeline import neat_pipeline
 from XOREvaluator import XOREvaluator
 from Logger import Logger
 from GenomeUtils import create_test_xor
+from MultiThreadedEvaluatorDecorator import MultiThreadedEvaluatorDecorator
 
 if __name__ == "__main__":
-    evaluator = XOREvaluator()
+    evaluator = MultiThreadedEvaluatorDecorator(evaluator = XOREvaluator(), n_workers=4)
     logger = Logger()
-    neat_pipeline(150, 3, 1, evaluator, "TestResults/", 50, 15.9, logger)
+    neat_pipeline(150, 3, 1, evaluator, "TestResults/", 100, 0.98, logger)
     # test = create_test_xor()
     # print_genome(test)
     # evaluator.evaluate_genomes([test])
