@@ -45,7 +45,7 @@ class Genome:
     self.generation = generation
     self.fitness = None
     self.ajfitness = None
-    self.species_id = -1
+    self.species_id = -2
     self.parents_species_id = parents_species_id
   
 
