@@ -101,7 +101,6 @@ class SpeciesManager:
 
     def create_new_specie(self, representant):
         self.current_specie_id += 1
-        representant.species_id = self.current_specie_id
         self.species_id.append(self.current_specie_id)
         self.species_adjusted_fitness_sum[self.current_specie_id] = dict()
         self.species_avg_fitness[self.current_specie_id] = dict()
