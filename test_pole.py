@@ -8,7 +8,7 @@ from math import inf
 if __name__ == "__main__":
     evaluator = MultiThreadedEvaluatorDecorator(PoleBalancerEvaluator(), 1)
     logger = Logger()
-    neat_pipeline(150, evaluator.get_nb_inputs_nn(), evaluator.get_nb_outputs_nn(), evaluator, "TestResults/", 200, inf, logger)
+    neat_pipeline(150, evaluator.get_nb_inputs_nn(), evaluator.get_nb_outputs_nn(), evaluator, "TestResults/", 200, 195, logger)
     # test = create_test_xor()
     # print_genome(test)
     # evaluator.evaluate_genomes([test])

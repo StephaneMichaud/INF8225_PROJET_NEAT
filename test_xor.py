@@ -7,7 +7,7 @@ from Evaluators.MultiThreadedEvaluatorDecorator import MultiThreadedEvaluatorDec
 if __name__ == "__main__":
     evaluator = MultiThreadedEvaluatorDecorator(evaluator = XOREvaluator(), n_workers=4)
     logger = Logger()
-    neat_pipeline(150, 3, 1, evaluator, "TestResults/", 100, 9, logger)
+    neat_pipeline(150, 3, 1, evaluator, "TestResults/", 100, 15, logger)
     # test = create_test_xor()
     # print_genome(test)
     # evaluator.evaluate_genomes([test])

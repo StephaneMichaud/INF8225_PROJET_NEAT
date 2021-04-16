@@ -270,7 +270,7 @@ class SpeciesManager:
                 else:
                     D += 1
         N = max(genome_a.get_nb_genes(), genome_b.get_nb_genes())
-        N = N if N >= 20 else 1.0
+        N = N if N >= 20 else 1.5
         W = mean(shared_genes) if len(shared_genes) > 0 else 0
         return self.c1*E/N + self.c2*D/N + self.c3*W
 

@@ -12,6 +12,8 @@ import numpy as np
 class SnakeEvaluator:
     def __init__(self):
         self.env = gym.make('snake-v0')
+        self.env.unit_gap = 0
+        self.env.grid_size = [50,50]
         self.INCREMENT_COMBINATIONS = list(product([0,-1,1],[0,-1,1]))
         self.INCREMENT_COMBINATIONS.pop(0)
         self.initialize_attributes()
@@ -117,9 +119,9 @@ class SnakeEvaluator:
     def get_snake_default_fitness(self):
         return self.GRID_SIZE_X*self.GRID_SIZE_Y
 
-    def adjust_fitness(self, genome, reward, total_time_steps):
+    def adjust_fitness(self, genome, reward, ):
         genome.fitness += self.get_snake_default_fitness()*reward
-        genome.fitness -= 1  # penalty for time passing
+        genome.fitness += 1  # penalty for time passing
 
     def evaluate_genomes(self, current_population):
         '''Evaluates the current population'''
@@ -129,18 +131,26 @@ class SnakeEvaluator:
             genome.fitness = self.get_snake_default_fitness()
             total_time_steps = 0
             is_snake_alive = True
+            no_found_cmpt = 0
             while is_snake_alive:
                 nn_input = self.prepare_to_input(self.game_controller.grid, self.snake.head)
                 nn_output = genome.feed_forward(nn_input)
                 action = self.convert_nn_output_to_action(nn_output)
 
                 state = self.env.step(action)
+                print(state)
                 reward = state[1]  # index for reward
+                if reward == 1:
+                    no_found_cmpt = 0
+                else:
+                    no_found_cmpt += 1
+                    if no_found_cmpt > 200:
+                        break
 
-                self.adjust_fitness(genome, reward, total_time_steps)
+                self.adjust_fitness(genome, reward)
 
                 is_snake_alive = state[3]['snakes_remaining'] == 1
-                total_time_steps += 1
 
                 if genome.fitness < 0:
                     break
+                self.env.render()
