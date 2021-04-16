@@ -112,8 +112,8 @@ class SpeciesManager:
         self.species_max_fitness[self.current_specie_id][self.gen] = representant.fitness
         self.species_max_genome[self.current_specie_id] = dict()
         self.species_max_genome[self.current_specie_id][self.gen] = representant
-        self.genomes_per_specie[self.current_specie_id] = [representant]
-
+        self.genomes_per_specie[self.current_specie_id] = [ representant ]
+        representant.species_id = self.current_specie_id
         return self.current_specie_id
 
     def make_new_species(self, orphan_genomes):

@@ -55,6 +55,7 @@ def neat_pipeline(population_size, input_size, output_size, evaluator, outputh_p
                 logger.log_species(species_id, speciesManager.get_species_max_genome(
                     species_id), speciesManager.get_species_size(species_id), gen)
 
+    print_genome2(speciesManager.get_current_max_genome())
     print('is over')
     # for r_genome in speciesManager.species_representant:
     #     print_genome2(speciesManager.species_representant[r_genome])
