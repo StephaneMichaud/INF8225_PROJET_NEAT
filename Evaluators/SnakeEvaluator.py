@@ -1,5 +1,6 @@
 from functools import reduce
 from itertools import product
+from copy import deepcopy
 
 import gym
 import gym_snake
@@ -119,28 +120,48 @@ class SnakeEvaluator:
 
     def adjust_fitness(self, genome, reward, total_time_steps):
         genome.fitness += self.get_snake_default_fitness()*reward
-        genome.fitness -= 1  # penalty for time passing
+
+
+    def get_distance_to_food(self, grid_object, head_position):
+        return 0
 
     def evaluate_genomes(self, current_population):
         '''Evaluates the current population'''
+        
+        evaluated_starting_states = []
+        for _ in range(0,10):
+            self.initialize_attributes()
+            evaluated_starting_states.append(deepcopy(self.env))
 
         for genome in current_population:
-            self.initialize_attributes()
-            genome.fitness = self.get_snake_default_fitness()
-            total_time_steps = 0
-            is_snake_alive = True
-            while is_snake_alive:
-                nn_input = self.prepare_to_input(self.game_controller.grid, self.snake.head)
-                nn_output = genome.feed_forward(nn_input)
-                action = self.convert_nn_output_to_action(nn_output)
+            for e_state in evaluated_starting_states:
+                cpt_since_last_food = 0
+                self.initialize_attributes()
+                self.env=e_state
+                genome.fitness = self.get_snake_default_fitness()
+                total_time_steps = 0
+                is_snake_alive = True
+                previous_grid=None
+                previous_head_position=None
+                while is_snake_alive:
+                    cpt_since_last_food+=1
+                    previous_grid = deepcopy(self.game_controller.grid)
+                    previous_head_position = deepcopy(self.snake.head)
 
-                state = self.env.step(action)
-                reward = state[1]  # index for reward
 
-                self.adjust_fitness(genome, reward, total_time_steps)
+                    nn_input = self.prepare_to_input(self.game_controller.grid, self.snake.head)
+                    nn_output = genome.feed_forward(nn_input)
+                    action = self.convert_nn_output_to_action(nn_output)
+                    state = self.env.step(action)
+                    reward = state[1]  # index for reward
+                    if reward != 0:
+                        cpt_since_last_food = 0
+                    
+                    self.adjust_fitness(genome, reward, total_time_steps)
 
-                is_snake_alive = state[3]['snakes_remaining'] == 1
-                total_time_steps += 1
-
-                if genome.fitness < 0:
-                    break
+                    is_snake_alive = state[3]['snakes_remaining'] == 1 and cpt_since_last_food < self.GRID_SIZE_X*self.GRID_SIZE_Y
+                    total_time_steps += 1
+                genome.fitness+=total_time_steps
+                genome.fitness+=self.get_distance_to_food(previous_grid,previous_head_position)
+                
+            genome.fitness/=float(len(evaluated_starting_states))
