@@ -1,6 +1,6 @@
 from Genome import Genome
 from Mutation import MutationTracker
-from Reproduction import create_initial_population, get_basic_reproduction_config, reproduce_new_gen
+from Reproduction import create_initial_population, get_basic_reproduction_config, reproduce_new_gen, ExtinctionException
 from SpeciesManager import SpeciesManager
 from GenomeUtils import print_genome2
 
@@ -30,8 +30,12 @@ def neat_pipeline(population_size, input_size, output_size, evaluator, outputh_p
             current_population = create_initial_population(
                 input_size, output_size, population_size, reproduction_config.initial_fc)
         else:
-            current_population = reproduce_new_gen(
-                species_manager=speciesManager, mutation_tracker=mutationTracker, reproduction_config=reproduction_config)
+            try:
+                current_population = reproduce_new_gen(
+                    species_manager=speciesManager, mutation_tracker=mutationTracker, reproduction_config=reproduction_config)
+            except ExtinctionException as e:
+                print('Extinction occured')
+                break
 
         # will set fitness attribute inside of each genomes
         evaluator.evaluate_genomes(current_population)
@@ -55,6 +59,7 @@ def neat_pipeline(population_size, input_size, output_size, evaluator, outputh_p
                 logger.log_species(species_id, speciesManager.get_species_max_genome(
                     species_id), speciesManager.get_species_size(species_id), gen)
 
+    print_genome2(speciesManager.get_current_max_genome())
     print('is over')
     # for r_genome in speciesManager.species_representant:
     #     print_genome2(speciesManager.species_representant[r_genome])

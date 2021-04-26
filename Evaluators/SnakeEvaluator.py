@@ -13,6 +13,8 @@ import numpy as np
 class SnakeEvaluator:
     def __init__(self):
         self.env = gym.make('snake-v0')
+        self.env.unit_gap = 0
+        self.env.grid_size = [50,50]
         self.INCREMENT_COMBINATIONS = list(product([0,-1,1],[0,-1,1]))
         self.INCREMENT_COMBINATIONS.pop(0)
         self.initialize_attributes()

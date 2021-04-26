@@ -1,6 +1,3 @@
-from nes_py.wrappers import JoypadSpace
-import gym_super_mario_bros
-from gym_super_mario_bros.actions import COMPLEX_MOVEMENT
 from gym import wrappers, logger
 import gym
 class RandomAgent(object):
@@ -28,12 +25,14 @@ if __name__ == '__main__':
     episode_count = 1
     reward = 0
     done = False
-
+    print(env.action_space)
     for i in range(episode_count):
         ob = env.reset()
+        print(len(ob))
         while True:
             action = agent.act(ob, reward, done)
             ob, reward, done, info = env.step(action)
+            print(reward)
             if done:
                 print(agent.reward)
                 break

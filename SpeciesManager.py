@@ -5,7 +5,7 @@ import math
 
 
 class SpeciesManager:
-    def __init__(self, threshold=3.0, c1=0.5, c2=0.2, c3=0.3):
+    def __init__(self, threshold=3, c1=1, c2=1, c3=0.5):
         self.threshold = threshold
         self.c1 = c1
         self.c2 = c2
@@ -111,8 +111,8 @@ class SpeciesManager:
         self.species_max_fitness[self.current_specie_id][self.gen] = representant.fitness
         self.species_max_genome[self.current_specie_id] = dict()
         self.species_max_genome[self.current_specie_id][self.gen] = representant
-        self.genomes_per_specie[self.current_specie_id] = [representant]
-
+        self.genomes_per_specie[self.current_specie_id] = [ representant ]
+        representant.species_id = self.current_specie_id
         return self.current_specie_id
 
     def make_new_species(self, orphan_genomes):
@@ -269,7 +269,7 @@ class SpeciesManager:
                 else:
                     D += 1
         N = max(genome_a.get_nb_genes(), genome_b.get_nb_genes())
-        N = N if N >= 20 else 1.0
+        N = N if N >= 20 else 1.5
         W = mean(shared_genes) if len(shared_genes) > 0 else 0
         return self.c1*E/N + self.c2*D/N + self.c3*W
 
