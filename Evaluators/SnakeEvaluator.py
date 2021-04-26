@@ -16,6 +16,7 @@ class SnakeEvaluator:
         self.env.grid_size = [50,50]
         self.INCREMENT_COMBINATIONS = list(product([0,-1,1],[0,-1,1]))
         self.INCREMENT_COMBINATIONS.pop(0)
+        self.env.seed(0)
         self.initialize_attributes()
 
     def get_unit_type(self,color):
@@ -119,16 +120,42 @@ class SnakeEvaluator:
     def get_snake_default_fitness(self):
         return self.GRID_SIZE_X*self.GRID_SIZE_Y
 
-    def adjust_fitness(self, genome, reward, ):
-        genome.fitness += self.get_snake_default_fitness()*reward
+    def adjust_fitness(self, genome, reward):
+        genome.fitness += self.get_snake_default_fitness()*max(reward, 0)
         genome.fitness += 1  # penalty for time passing
 
+    def show_genome(self, genome):
+        self.initialize_attributes()
+        total_time_steps = 0
+        is_snake_alive = True
+        no_found_cmpt = 0
+        while is_snake_alive:  
+            nn_input = self.prepare_to_input(self.game_controller.grid, self.snake.head)
+            nn_output = genome.feed_forward(nn_input)
+            action = self.convert_nn_output_to_action(nn_output)
+
+            state = self.env.step(action)
+            reward = state[1]  # index for reward
+            print(reward)
+            if reward == 1:
+                no_found_cmpt = 0
+            else:
+                no_found_cmpt += 1
+                if no_found_cmpt > 200:
+                    break
+
+
+            is_snake_alive = state[3]['snakes_remaining'] == 1
+            self.env.render()
+        self.env.close()
     def evaluate_genomes(self, current_population):
         '''Evaluates the current population'''
-
+        
+        best_gen = None
         for genome in current_population:
             self.initialize_attributes()
-            genome.fitness = self.get_snake_default_fitness()
+            self.snake.head = np.array([25, 30])
+            genome.fitness = 0
             total_time_steps = 0
             is_snake_alive = True
             no_found_cmpt = 0
@@ -138,7 +165,6 @@ class SnakeEvaluator:
                 action = self.convert_nn_output_to_action(nn_output)
 
                 state = self.env.step(action)
-                print(state)
                 reward = state[1]  # index for reward
                 if reward == 1:
                     no_found_cmpt = 0
@@ -148,9 +174,12 @@ class SnakeEvaluator:
                         break
 
                 self.adjust_fitness(genome, reward)
+                is_snake_alive = state[1] == -1
+                #self.env.render()
+            
+            if best_gen is None:
+                best_gen = genome
+            elif genome.fitness > best_gen.fitness:
+                best_gen = genome
 
-                is_snake_alive = state[3]['snakes_remaining'] == 1
-
-                if genome.fitness < 0:
-                    break
-                self.env.render()
+        self.show_genome(best_gen)
