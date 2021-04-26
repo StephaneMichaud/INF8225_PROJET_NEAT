@@ -119,26 +119,37 @@ class SnakeEvaluator:
         return self.GRID_SIZE_X*self.GRID_SIZE_Y
 
     def adjust_fitness(self, genome, reward, total_time_steps):
-        genome.fitness += self.get_snake_default_fitness()*reward
+        genome.fitness +=  self.GRID_SIZE_X*self.GRID_SIZE_Y*reward
 
+    def is_food(self, grid_object, offset_x, offset_y):
+        for x in range(0, self.env.unit_size):
+            for y in range(0, self.env.unit_size):
+                if self.equal_colors(self.FOOD_COLOR, grid_object.grid[x+offset_x, y+offset_y]):
+                    return True
+
+        return False
 
     def get_distance_to_food(self, grid_object, head_position):
-        return 0
+        for x in range(0, grid_object.grid_size[0]):
+            for y in range(0, grid_object.grid_size[1]):
+                if self.is_food(grid_object, x*self.env.unit_size, y*self.env.unit_size):
+                    return abs(head_position[0]-x)+abs(head_position[1]-y)+1
+        return self.GRID_SIZE_X
 
     def evaluate_genomes(self, current_population):
         '''Evaluates the current population'''
         
         evaluated_starting_states = []
-        for _ in range(0,10):
+        for _ in range(0,20):
             self.initialize_attributes()
             evaluated_starting_states.append(deepcopy(self.env))
 
         for genome in current_population:
+            genome.fitness = 0
             for e_state in evaluated_starting_states:
                 cpt_since_last_food = 0
                 self.initialize_attributes()
                 self.env=e_state
-                genome.fitness = self.get_snake_default_fitness()
                 total_time_steps = 0
                 is_snake_alive = True
                 previous_grid=None
@@ -154,14 +165,13 @@ class SnakeEvaluator:
                     action = self.convert_nn_output_to_action(nn_output)
                     state = self.env.step(action)
                     reward = state[1]  # index for reward
-                    if reward != 0:
+                    if reward > 0:
                         cpt_since_last_food = 0
+                        self.adjust_fitness(genome, reward, total_time_steps)
                     
-                    self.adjust_fitness(genome, reward, total_time_steps)
-
-                    is_snake_alive = state[3]['snakes_remaining'] == 1 and cpt_since_last_food < self.GRID_SIZE_X*self.GRID_SIZE_Y
+                    is_snake_alive = state[3]['snakes_remaining'] == 1 and cpt_since_last_food < self.GRID_SIZE_X*self.GRID_SIZE_Y and reward != -1
                     total_time_steps += 1
-                genome.fitness+=total_time_steps
-                genome.fitness+=self.get_distance_to_food(previous_grid,previous_head_position)
+                genome.fitness+=10.0/self.get_distance_to_food(previous_grid,previous_head_position)
+                genome.fitness+=total_time_steps/10.0
                 
             genome.fitness/=float(len(evaluated_starting_states))
