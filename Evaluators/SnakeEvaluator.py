@@ -3,8 +3,9 @@ from itertools import product
 from copy import deepcopy
 
 import gym
-import gym_snake
+from sneks.envs.snek import SingleSnek
 import numpy as np
+import math
 
 
 # https://github.com/grantsrb/Gym-Snake
@@ -12,43 +13,20 @@ import numpy as np
 
 class SnakeEvaluator:
     def __init__(self):
-        self.env = gym.make('snake-v0')
-        self.env.unit_gap = 0
-        self.env.grid_size = [50,50]
+        self.env = SingleSnek(size=(16,16), step_limit=1000, dynamic_step_limit=1000, obs_type='raw', n_food=1, die_on_eat=False, render_zoom=20, add_walls=False)
+        self.grid_size = [16,16]
         self.INCREMENT_COMBINATIONS = list(product([0,-1,1],[0,-1,1]))
         self.INCREMENT_COMBINATIONS.pop(0)
-        self.random_init = False
         self.initialize_attributes()
-
-    def get_unit_type(self,color):
-        if self.equal_colors(color,self.BODY_COLOR):
-            print('bodddy')
-            return 0
-        if self.equal_colors(color,self.HEAD_COLOR):
-            return 2
-        if self.equal_colors(color,self.FOOD_COLOR):
-            print('foooooooodddd')
-            return 1
-        if self.equal_colors(color,self.SPACE_COLOR):
-            return 3
-
-        return 2
+        self.ACTIONS = [0,1,2,3]
+        self.NB_ACTIONS =4
+        self.FOOD_ID = 64
+        self.HEAD_ID = 101
+        self.BODY_ID = 100
+        self.VOID_ID = 0
 
     def initialize_attributes(self):
         self.env.reset()  # Constructs an instance of the game
-        self.BODY_COLOR = self.game_controller().grid.BODY_COLOR
-        self.HEAD_COLOR = self.game_controller().grid.HEAD_COLOR
-        self.FOOD_COLOR = self.game_controller().grid.FOOD_COLOR
-        self.SPACE_COLOR = self.game_controller().grid.SPACE_COLOR
-        self.GRID_SIZE_X = self.game_controller().grid.grid_size[0]
-        self.GRID_SIZE_Y = self.game_controller().grid.grid_size[1]
-        snake = self.game_controller().get_snake()
-        self.ACTIONS = [snake.UP, snake.RIGHT,
-                        snake.DOWN, snake.LEFT]
-        self.NB_ACTIONS = len(self.ACTIONS)
-
-    def game_controller(self):
-        return self.env.controller
 
     def get_nb_inputs_nn(self):
         return 3*8+1
@@ -59,151 +37,122 @@ class SnakeEvaluator:
     def convert_nn_output_to_action(self, nn_output):
         return self.ACTIONS[np.argmax(nn_output)]
 
-    def equal_colors(self, color_a, color_b):
-        return reduce(lambda x, y: x and y, map(lambda p, q: p == q, color_a, color_b), True)
+    def in_bound(self, y, x):
+        return x>= 0 and x<  self.grid_size[1] and y>=0 and y <  self.grid_size[0]
 
-    def get_unit_color(self, grid_object, offset_x, offset_y):
-        return grid_object.grid[int(offset_x * self.env.unit_size)+int(self.env.unit_size/2)][int(offset_y * self.env.unit_size)+int(self.env.unit_size/2)]
+    def get_output_index(self, case_id):
+        return  0 if case_id == self.FOOD_ID else 1
 
-    def calculate_distance_activation(self, snake_head_position, increment_x, increment_y):
-        distance = 0.0
-        total_distance = 0.0
-        if increment_x != 0:
-            total_distance += self.GRID_SIZE_X
-            if increment_x == -1:
-                distance += snake_head_position[0]
-            else:
-                distance += self.GRID_SIZE_X - snake_head_position[0]
-
-        if increment_y != 0:
-            total_distance += self.GRID_SIZE_Y
-            if increment_y == -1:
-                distance += snake_head_position[1]
-            else:
-                distance += self.GRID_SIZE_Y - snake_head_position[1]
+    def get_bound_distance(self, y, x, inc_y, inc_x):
+        if inc_y == inc_x == 0:
+            return 0
         
-        return distance/total_distance
+        distance_x = 0.0
+        distance_y = 0.0
+        if inc_y != 0:
+            distance_y += y if inc_y == -1 else self.grid_size[0] - y
+        if inc_x != 0:
+            distance_x += x if inc_x == -1 else self.grid_size[1] - x
 
-    def detector(self, grid_object, snake_head_position, increment_x, increment_y):
-        position = snake_head_position.copy()
 
+        return math.sqrt((distance_y)**2 + (distance_x)**2) / math.sqrt(self.grid_size[0]**2 + self.grid_size[1]**2)
+
+    def get_cases_distance(self, y_a, x_a, y_b, x_b):
+        return math.sqrt((y_a - y_b)**2 + (x_a - x_b)**2) / math.sqrt(self.grid_size[0]**2 + self.grid_size[1]**2)
+
+
+    def detector(self, state, head_pos, inc_y, inc_x):
+        position = head_pos.copy()
         cpt = 0
+        output = [0, 0, 0]
         while True:
             cpt+=1
-            position[0] += increment_x
-            position[1] += increment_y
-            
-            in_bounds = position[0] >= 0 and position[1] >= 0 and position[0] < self.GRID_SIZE_X and position[1] < self.GRID_SIZE_Y
+            position[0] += inc_y
+            position[1] += inc_x
+
+            in_bounds = self.in_bound(position[0], position[1])
             if in_bounds:
-                unit_color = self.get_unit_color(grid_object, position[0], position[1])
-                if self.equal_colors(self.SPACE_COLOR,unit_color):
+                unit_id = state[position[0], position[1]]
+                if unit_id == self.VOID_ID:
                     continue
                 else:
-                    output = [0, 0, 0]
-                    output[self.get_unit_type(unit_color)] = (abs(increment_x)+abs(increment_y))*cpt\
-                        /float(self.GRID_SIZE_X*abs(increment_x)+self.GRID_SIZE_Y*abs(increment_y))
-
-                            
-                    output[2] = self.calculate_distance_activation(snake_head_position, increment_x, increment_y)
-
-                    return output
+                    if output[self.get_output_index(unit_id)] == 0:
+                        output[self.get_output_index(unit_id)] = self.get_cases_distance(head_pos[0], head_pos[1], position[0], position[1])
             else:
                 break
-        
-        return [0,0,self.calculate_distance_activation(snake_head_position, increment_x, increment_y)]
+        output[2] = self.get_bound_distance(head_pos[0], head_pos[1], inc_y, inc_x)
+        return output
 
-    def prepare_to_input(self, grid_object, snake_head_position):
+    def prepare_to_input(self, state, snake_head_position):
         nn_input = [1]
 
         for increment in self.INCREMENT_COMBINATIONS:
             increment_x, increment_y = increment
-            nn_input += self.detector(grid_object,snake_head_position,increment_x,increment_y)
+            nn_input += self.detector(state,snake_head_position,increment_x,increment_y)
 
         return nn_input
 
     def adjust_fitness(self, genome, reward):
-        genome.fitness +=  self.GRID_SIZE_X*self.GRID_SIZE_Y*reward
+        genome.fitness +=  self.grid_size[0]*self.grid_size[1]*reward
+        genome.fitness +=1.0
 
-    def is_food(self, grid_object, offset_x, offset_y):
-        for x in range(0, self.env.unit_size):
-            for y in range(0, self.env.unit_size):
-                if self.equal_colors(self.FOOD_COLOR, grid_object.grid[x+offset_x, y+offset_y]):
-                    return True
 
-        return False
+    def get_case_pos(self, state, id):
+        for i in range(0, self.grid_size[0]):
+            for j in range(0, self.grid_size[1]):
+                if state[i][j] == id:
+                    return [i,j]
+        raise Exception('id not found : {}'.format(id))
+                
+    def get_food_pos(self, state):
+        return self.get_case_pos(state, self.FOOD_ID)
 
-    def get_food_pos(self):
-        return self.env.controller.get_food_coord()
+    def get_head_pos(self, state):
+        return self.get_case_pos(state, self.HEAD_ID)
 
     def get_distance_to_food(self, food_pos, head_position):
         return abs(head_position[0]-food_pos[0])+abs(head_position[1]-food_pos[1])+1
 
-    def show_genome(self, genome, env):
-        #self.initialize_attributes()
-        env.reset()
-        total_time_steps = 0
+
+    def show_genome(self, genome):
+        cpt_since_last_food = 0
+        state = self.env.reset()
+        food_pos = self.get_head_pos(state)
         is_snake_alive = True
-        no_found_cmpt = 0
-        food_pos = self.get_food_pos()
-        while is_snake_alive:  
-            nn_input = self.prepare_to_input(self.game_controller().grid, self.game_controller().snakes[0].head)
-            print(nn_input)
+        while is_snake_alive:
+            self.env.render()
+            cpt_since_last_food+=1
+            nn_input = self.prepare_to_input(state, self.get_head_pos(state))
             nn_output = genome.feed_forward(nn_input)
             action = self.convert_nn_output_to_action(nn_output)
-
-            state = env.step(action)
-            reward = state[1]
-            if reward == 1:
-                no_found_cmpt = 0
-                food_pos = self.get_food_pos()
-            else:
-                no_found_cmpt += 1
-                if no_found_cmpt > 200:
-                    break
-
-
-            is_snake_alive = state[1] >=0
-            env.render()
+            state, reward, done, _ = self.env.step(action)
+            is_snake_alive = not done
+        self.env.close()
 
     def evaluate_genomes(self, current_population):
         '''Evaluates the current population'''
         best_gen = None
-        self.env.food_space = np.random.randint(self.GRID_SIZE_X, size=(1000, 2))
+
         for genome in current_population:
             genome.fitness = 0
             cpt_since_last_food = 0
-            self.env.reset()
-            food_pos = self.get_food_pos()
-            total_time_steps = 0
+            state = self.env.reset()
+            food_pos = self.get_head_pos(state)
             is_snake_alive = True
-            previous_grid=None
-            previous_head_position=None
             while is_snake_alive:
+                #self.env.render()
                 cpt_since_last_food+=1
-                previous_grid = deepcopy(self.game_controller().grid)
-                previous_head_position = deepcopy(self.game_controller().snakes[0].head)
-
-
-                nn_input = self.prepare_to_input(self.game_controller().grid, self.game_controller().snakes[0].head)
+                nn_input = self.prepare_to_input(state, self.get_head_pos(state))
                 nn_output = genome.feed_forward(nn_input)
                 action = self.convert_nn_output_to_action(nn_output)
-                state = self.env.step(action)
-                reward = state[1]  # index for reward
-                if reward > 0:
-                    food_pos = self.get_food_pos()
-                    cpt_since_last_food = 0
-                    self.adjust_fitness(genome, reward)
-                
-                is_snake_alive = reward != -1 and cpt_since_last_food < self.GRID_SIZE_X*self.GRID_SIZE_Y
-                total_time_steps += 1
-                genome.fitness+=100.0/self.get_distance_to_food(food_pos,previous_head_position)
-            genome.fitness+=total_time_steps/10.0
-
-
+                state, reward, done, _ = self.env.step(action)
+                is_snake_alive = not done
+                self.adjust_fitness(genome, reward)
             if best_gen is None:
-                best_gen = genome
+                best_gen  = genome
             elif genome.fitness > best_gen.fitness:
                 best_gen = genome
-
-        self.show_genome(best_gen, self.env)
+        
+        if best_gen.fitness > 800:
+            self.show_genome(best_gen)
                 
