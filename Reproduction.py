@@ -184,8 +184,13 @@ def get_basic_reproduction_config():
 def get_new_size_species(species_list, species_manager, reproduction_config):
 
     # get the sum of ajusted fitness
-    fitness_ajusted_sum = sum([species_manager.get_species_adjusted_fitness_mean(
-        specie_id) for specie_id in species_list])
+    try:
+        fitness_ajusted_sum = sum([species_manager.get_species_adjusted_fitness_mean(
+            specie_id) for specie_id in species_list])
+    except:
+        print(species_list)
+        print(species_manager.species_id)
+        raise Exception('allo')
 
     min_pop_size = reproduction_config.min_pop_size
     target_pop_size = reproduction_config.target_pop_size

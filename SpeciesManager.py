@@ -5,7 +5,7 @@ import math
 
 
 class SpeciesManager:
-    def __init__(self, threshold=3, c1=1, c2=1, c3=0.5):
+    def __init__(self, threshold=3, c1=1.0, c2=1.0, c3=0.5):
         self.threshold = threshold
         self.c1 = c1
         self.c2 = c2
@@ -168,9 +168,9 @@ class SpeciesManager:
         if len(self.species_id) > 2:
             if len(self.max_fitness) > reproduction_config.global_max_gen_stagnant and \
                     self.max_fitness[-1] < self.max_fitness[-reproduction_config.global_max_gen_stagnant]:
-                first_max = 0
+                first_max = -10000000
                 first_id = -1
-                second_max = 0
+                second_max = -1000000
                 second_id = -1
                 for specie_id in self.species_max_fitness:
                     if self.gen in self.species_max_fitness[specie_id]:
@@ -269,7 +269,7 @@ class SpeciesManager:
                 else:
                     D += 1
         N = max(genome_a.get_nb_genes(), genome_b.get_nb_genes())
-        N = N if N >= 20 else 1.5
+        N = 1.5
         W = mean(shared_genes) if len(shared_genes) > 0 else 0
         return self.c1*E/N + self.c2*D/N + self.c3*W
 
