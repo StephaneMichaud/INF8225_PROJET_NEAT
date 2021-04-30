@@ -54,6 +54,9 @@ class Genome:
     def get_nb_genes(self):
         return len(self.c_genes)
 
+    def get_nb_hidden_nodes(self):
+        return len(self.n_genes) - self.input_size - self.output_size
+
     def feed_forward(self, input, max_loop=1):
 
         # reset values
